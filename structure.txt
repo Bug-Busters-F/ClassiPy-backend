@@ -1,0 +1,14 @@
+project/
+├── README.md
+├── uploads/
+├── requirements.txt
+├── src/
+│   ├── routers/
+│   │   ├── template.py
+│   │   └── uploadfile.py
+│   ├── services/
+│   │   ├── agent_service.py
+│   │   └── tools/
+│   │       ├── visit_webpage.py
+│   │       └── web_search.py
+│   └── main.py    
