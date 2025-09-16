@@ -5,6 +5,7 @@ import src.services.read_pdf as read_pdf
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import json
 
+
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
