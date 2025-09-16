@@ -6,3 +6,5 @@ markdownify
 requests
 duckduckgo_search
 smolagents[litellm]
+ollama
+pdfplumber
