@@ -30,17 +30,23 @@ async def create_upload_file(file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(content)
 
-    if ext.lower() == ".pdf":
-        with pdfplumber.open(file_path) as pdf:
-            page = pdf.pages[0]
-            page_words = page.extract_words()
+    try:
+        if ext.lower() == ".pdf":
+            with pdfplumber.open(file_path) as pdf:
+                page = pdf.pages[0]
+                page_words = page.extract_words()
 
-            if not page_words[0]["text"] == "TECSYS":
-                pdf_text = " ".join([p["text"] for p in page_words])
-                result = read_pdf.find_PN_and_Adress_with_ai(pdf_text)
-            else:
-                result = read_pdf.find_pn(page)
-    else:
-        result = "Arquivo não é PDF. Apenas PDFs são analisados."
+                if not page_words[0]["text"] == "TECSYS":
+                    pdf_text = " ".join([p["text"] for p in page_words])
+                    result = read_pdf.find_PN_and_Adress_with_ai(pdf_text)
+                else:
+                    result = read_pdf.find_pn(page)
+        else:
+            result = "Arquivo não é PDF. Apenas PDFs são analisados."
 
-    return json.loads(result)
+        return json.loads(result)
+    except Exception as e:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(status_code=500, detail=f"Erro na análise do PDF: {str(e)}")
+

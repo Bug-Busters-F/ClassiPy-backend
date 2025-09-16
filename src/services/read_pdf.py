@@ -29,7 +29,7 @@ def find_PN_and_Adress_with_ai(text):
     }
 
     Text:
-    """ + pdf_text
+    """ + text
 
     result = ollama.generate(model= os.getenv("OLLAMA_MODEL"), prompt=prompt)
     response =  result['response']
@@ -40,7 +40,7 @@ def find_adress(pdf_page):
 
     box = (40, 115.46, 385, 122.68)
 
-    recorte = page.crop(box)
+    recorte = pdf_page.crop(box)
 
     for word in recorte.extract_words():
         adress += (word["text"]+" ")
