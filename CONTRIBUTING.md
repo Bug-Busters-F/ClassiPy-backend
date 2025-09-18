@@ -89,6 +89,11 @@ O primeiro passo é clonar o repositório do projeto para o seu ambiente local.
    ```sh
    uvicorn src.main:app --reload
    ```
+   Ou execute o camando
+
+   ```sh
+   python run.py
+   ```
 
 4. Acesse a Aplicação
 - O FastAPI está disponível em: [http://localhost:8000](http://localhost:8000)
