@@ -1,0 +1,23 @@
+# Ignorar arquivos e pastas do Git
+.git
+.gitignore
+
+# Ignorar arquivos específicos do Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Ignorar ambiente virtual e caches do Python
+.venv
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar arquivos de configuração local e de teste
+.env
+.env.template
+test_db_connection.py
+test_db_simple.py
+
+# Ignorar dados do banco de dados local (se houver)
+postgres_data/

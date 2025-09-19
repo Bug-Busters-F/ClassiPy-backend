@@ -1,5 +1,3 @@
-create database classipy;
-\c database classipy;
 
 create table tipi(
 id_tipi serial primary key,
