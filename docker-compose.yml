@@ -1,35 +1,30 @@
-version: '3.8'
-
 services:
-  db:
+  postgres:
     image: postgres:15
-    container_name: classipy_db
+    container_name: postgres
+    restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: classipy
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root123
+      POSTGRES_DB: classipy_database
+    ports:
+      - "5432:5432"
     volumes:
-      # Monta o script SQL para inicialização automática do banco
-      - ./classipy_database.sql:/docker-entrypoint-initdb.d/init.sql
-      # Volume para persistir os dados do banco
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      # Expõe a porta do banco para o host (opcional, para debug)
-      - "5433:5432"
+      - ./postgres-init:/docker-entrypoint-initdb.d
 
-  api:
-    build: .
-    container_name: classipy_api
-    volumes:
-      # Monta o código fonte para live-reloading durante o desenvolvimento
-      - ./src:/app/src
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
     ports:
-      - "8000:8000"
-    environment:
-      # A URL aponta para o serviço 'db', não para 'localhost'
-      - DATABASE_URL=postgresql://postgres:root@db:5432/classipy
-    depends_on:
-      - db
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    env_file:
+      - .env
+    command: ["serve"]
 
 volumes:
   postgres_data:
+  ollama_data:
