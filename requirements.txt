@@ -1,11 +1,16 @@
 # Framework do backend
 fastapi[standard]
 
+# SQLAlchemy para conexão com o banco de dados
+SQLAlchemy
+psycopg2-binary  # Driver para PostgreSQL, troque se usar outro banco (ex: mysql-connector-python)
+pydantic-settings # Para gerenciar variáveis de ambiente
+
 # Requirements do Agente Ollama
 markdownify
 requests
 duckduckgo_search
-smolagents[litellm]
+smolagents
+litellm==1.68.0
 ollama
 pdfplumber
-
