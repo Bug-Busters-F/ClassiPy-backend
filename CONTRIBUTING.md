@@ -17,23 +17,13 @@ Aqui está o que você precisa:
 - Um IDE para o desenvolvimento. Recomendamos o [Visual Studio Code](https://code.visualstudio.com).
 - A linguagem de programação [Python v3.12](https://www.python.org/downloads/release/python-3120/).
 - O runtime [Ollama](https://ollama.com/download) para LLMs locais.
+- [Postgres](https://www.postgresql.org/download/) para armazenamento.  
+  > **Observação:** Caso não queira instalar o Ollama e o Postgres manualmente, você também pode rodá-los via **Docker**. Essa é a forma mais simples e recomendada para começar.  
+
 
 ## Instalação
 
-### 1. Baixar um modelo no Ollama
-Antes de rodar a aplicação, você precisa baixar um modelo LLM no Ollama. Siga os passos abaixo:
-
-1. Inicie o aplicativo Ollama no seu computador.
-
-2. Baixe o modelo desejado via terminal.
-
-   ```sh
-   ollama pull NOME_DO_MODELO
-   ```
-   Você pode encontrar modelos [aqui](https://ollama.com/library). O projeto esta usando [qwen3:0.6b](https://ollama.com/library/qwen3:0.6b).
-
-
-### 2. Clonar o Repositório
+### 1. Clonar o Repositório
 
 
 O primeiro passo é clonar o repositório do projeto para o seu ambiente local.
@@ -60,6 +50,29 @@ O primeiro passo é clonar o repositório do projeto para o seu ambiente local.
     OLLAMA_MODEL= # Modelo baixado no ollama
     OLLAMA_API_PORT=11434 # Porta padrão do ollama
     ```
+
+### 2. Rodando Postgres e Ollama via Docker
+
+Você pode rodar tanto o **Postgres** quanto o **Ollama** usando Docker Compose, evitando precisar instalar tudo manualmente.  
+
+1. Certifique-se de ter [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/install/) instalados.  
+
+2. No diretório do projeto, suba os containers:
+
+   ```bash
+   docker compose up -d
+   ```
+   Isso vai iniciar:
+
+   - Postgres na porta 5432
+
+   - Ollama na porta 11434
+
+3. Baixe o modelo LLM desejado no Ollama:
+   ```bash
+   docker compose exec ollama ollama pull nomeDoModelo
+   ```
+   Substitua **nomeDoModelo** pelo modelo que você deseja usar.
 
 ### 3. Instalação utilizando um ambiente virtual `venv`
 

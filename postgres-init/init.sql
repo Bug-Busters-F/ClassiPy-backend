@@ -1,4 +1,3 @@
-
 create table tipi(
 id_tipi serial primary key,
 descricao varchar(100),
@@ -21,3 +20,4 @@ process_data date,
 part_number varchar(25),
 constraint fk_part_number foreign key (part_number) references produto(part_number)
 );
+
