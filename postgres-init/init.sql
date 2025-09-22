@@ -16,6 +16,7 @@ constraint fk_id_tipi foreign key (id_tipi) references tipi(id_tipi)
 );
 
 create table historico(
+hash_code varchar(256),
 process_data date,
 part_number varchar(25),
 constraint fk_part_number foreign key (part_number) references produto(part_number)

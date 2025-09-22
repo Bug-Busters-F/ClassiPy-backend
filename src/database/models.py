@@ -29,6 +29,7 @@ class Produto(Base):
 class Historico(Base):
     __tablename__ = "historico"
 
+    hash_code = Column(String(256))
     process_data = Column(Date)
     part_number = Column(String(25), ForeignKey("produto.part_number"), primary_key=True)
 
