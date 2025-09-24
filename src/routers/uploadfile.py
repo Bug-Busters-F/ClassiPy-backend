@@ -25,7 +25,7 @@ async def create_upload_file(file: UploadFile = File(...)):
     _, ext = os.path.splitext(file.filename)
     file_path = os.path.join(UPLOAD_DIR, f"{file_hash}{ext}")
 
-    if os.path.exists(file_path):
+    if not os.path.exists(file_path):
         with open(file_path, "wb") as f:
             f.write(content)
 
