@@ -1,7 +1,10 @@
-from database import SessionLocal, Base, engine
+from database import SessionLocal
+import time
 from models import Tipi, Produto, Historico
 
 def test_connection():
+
+    time.sleep(2)
 
     db = SessionLocal()
     try:
