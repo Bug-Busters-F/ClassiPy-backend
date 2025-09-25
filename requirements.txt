@@ -10,6 +10,7 @@ pydantic-settings # Para gerenciar variáveis de ambiente
 markdownify
 requests
 duckduckgo_search
-smolagents[litellm]
+smolagents
+litellm==1.68.0
 ollama
 pdfplumber

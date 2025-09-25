@@ -25,11 +25,9 @@ async def create_upload_file(file: UploadFile = File(...)):
     _, ext = os.path.splitext(file.filename)
     file_path = os.path.join(UPLOAD_DIR, f"{file_hash}{ext}")
 
-    if os.path.exists(file_path):
-        raise HTTPException(status_code=400, detail="Arquivo já enviado")
-
-    with open(file_path, "wb") as f:
-        f.write(content)
+    if not os.path.exists(file_path):
+        with open(file_path, "wb") as f:
+            f.write(content)
 
     try:
         if ext.lower() == ".pdf":
@@ -44,8 +42,11 @@ async def create_upload_file(file: UploadFile = File(...)):
                     result = read_pdf.find_pn(page)
         else:
             result = "Arquivo não é PDF. Apenas PDFs são analisados."
+            return json.load(result)
 
-        return json.loads(result)
+        response = json.loads(result)
+        response["hash_code"] = file_hash
+        return response
     except Exception as e:
         if os.path.exists(file_path):
             os.remove(file_path)
