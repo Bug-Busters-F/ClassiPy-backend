@@ -1,26 +1,32 @@
--- Tabela de Tipi (classificação fiscal)
 create table tipi (
     id_tipi serial primary key,
-    descricao varchar(100) not null,
-    aliquota numeric(5,2) not null,
-    ncm char(8) not null
+    descricao text,
+    aliquota numeric(5,2),
+    ncm char(8)
 );
 
--- Tabela de Produto
+create table endereco (
+    id_endereco serial primary key,
+    pais_origem varchar(80),
+    endereco_completo varchar(150)
+);
+
 create table produto (
-    part_number varchar(25) primary key,
-    nome varchar(100),
+    id serial primary key,
+    part_number varchar(25) not null,
+    descricao text,
     fornecedor varchar(100),
-    pais_origem char(2),
+    status_produto boolean default false,
     id_tipi int,
-    constraint fk_id_tipi foreign key (id_tipi) references tipi(id_tipi)
+    id_endereco int,
+    constraint fk_produto_tipi foreign key (id_tipi) references tipi(id_tipi),
+    constraint fk_produto_endereco foreign key (id_endereco) references endereco(id_endereco)
 );
 
--- Histórico de classificações
 create table historico (
     id_historico serial primary key,
     hash_code varchar(256) not null,
-    process_data timestamp default current_timestamp, -- data/hora do salvamento
-    part_number varchar(25) not null,
-    constraint fk_part_number foreign key (part_number) references produto(part_number)
+    process_data timestamp default current_timestamp,
+    produto_id int not null,
+    constraint fk_historico_produto foreign key (produto_id) references produto(id)
 );
