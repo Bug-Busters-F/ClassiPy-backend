@@ -17,8 +17,8 @@ app.add_middleware(
 )
 
 @app.get("/")
-async def root():
-    return {"message": "Server Running..."}
+def read_root():
+    return {"message": "Classipy API is running"}
 
 app.include_router(template.router, prefix="/template")
 app.include_router(uploadfile.router, prefix="/uploadfile")
