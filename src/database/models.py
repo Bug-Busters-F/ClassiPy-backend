@@ -1,14 +1,16 @@
-from sqlalchemy import Column, Integer, String, Numeric, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from database import Base
+
 
 class Tipi(Base):
     __tablename__ = "tipi"
 
     id_tipi = Column(Integer, primary_key=True, index=True)
-    descricao = Column(String(100))
-    aliquota = Column(Numeric(5, 2))
-    ncm = Column(String(8))
+    descricao = Column(String(100), nullable=False)
+    aliquota = Column(Numeric(5, 2), nullable=False)
+    ncm = Column(String(8), nullable=False)
 
     produtos = relationship("Produto", back_populates="tipi")
 
@@ -29,8 +31,9 @@ class Produto(Base):
 class Historico(Base):
     __tablename__ = "historico"
 
-    hash_code = Column(String(256))
-    process_data = Column(Date)
-    part_number = Column(String(25), ForeignKey("produto.part_number"), primary_key=True)
+    id_historico = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    hash_code = Column(String(256), nullable=False)
+    process_data = Column(DateTime, default=datetime.now)
+    part_number = Column(String(25), ForeignKey("produto.part_number"), nullable=False)
 
     produto = relationship("Produto", back_populates="historicos")
