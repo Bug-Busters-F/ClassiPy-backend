@@ -18,7 +18,8 @@ Aqui está o que você precisa:
 - A linguagem de programação [Python v3.12](https://www.python.org/downloads/release/python-3120/).
 - O runtime [Ollama](https://ollama.com/download) para LLMs locais.
 - [Postgres](https://www.postgresql.org/download/) para armazenamento.  
-  > **Observação:** Caso não queira instalar o Ollama e o Postgres manualmente, você também pode rodá-los via **Docker**. Essa é a forma mais simples e recomendada para começar.  
+  > **Observação:** Caso não queira instalar o Ollama e o Postgres manualmente, você pode rodá-los via **Docker**. Também é possível rodar o **backend** no Docker junto com eles, o que simplifica a configuração.  
+  > **Importante para usuários Windows:** Se você optar por rodar o Postgres no Docker, o backend também precisará rodar dentro de um container Docker, para evitar problemas de conexão.
 
 
 ## Instalação
@@ -44,16 +45,18 @@ O primeiro passo é clonar o repositório do projeto para o seu ambiente local.
     cp .env.template .env
     ```
 
-5. Abra o arquivo `.env` e edite as credenciais de conexão com o banco de dados.
+5. Abra o arquivo `.env` e edite as credenciais de conexão com o ollama e o banco de dados.
 
     ```sh
     OLLAMA_MODEL= # Modelo baixado no ollama
     OLLAMA_API_PORT=11434 # Porta padrão do ollama
+
+    DATABASE_URL=postgresql+psycopg2://root:root123@localhost:5432/classipy_database
     ```
 
-### 2. Rodando Postgres e Ollama via Docker
+### 2. Rodando Backend, Postgres e Ollama via Docker
 
-Você pode rodar tanto o **Postgres** quanto o **Ollama** usando Docker Compose, evitando precisar instalar tudo manualmente.  
+Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Compose**, sem precisar instalar nada manualmente.
 
 1. Certifique-se de ter [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/install/) instalados.  
 
@@ -62,17 +65,17 @@ Você pode rodar tanto o **Postgres** quanto o **Ollama** usando Docker Compose,
    ```bash
    docker compose up -d
    ```
+
    Isso vai iniciar:
-
-   - Postgres na porta 5432
-
-   - Ollama na porta 11434
+   - Backend (porta 8000)  
+   - Postgres (porta 5432)  
+   - Ollama (porta 11434)  
 
 3. Baixe o modelo LLM desejado no Ollama:
    ```bash
    docker compose exec ollama ollama pull nomeDoModelo
    ```
-   Substitua **nomeDoModelo** pelo modelo que você deseja usar.
+   Substitua **nomeDoModelo** pelo modelo que você deseja usar.  
 
 ### 3. Instalação utilizando um ambiente virtual `venv`
 
