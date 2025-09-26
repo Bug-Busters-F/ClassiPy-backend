@@ -1,14 +1,12 @@
-from database import SessionLocal
+from ..database.database import SessionLocal
 from ..database.models import Historico, Produto
 from datetime import datetime
 
 def save_history(part_number: str, hash_code: str):
     db = SessionLocal()
     try:
-        # Check if product already exists
         product = db.query(Produto).filter_by(part_number=part_number).first()
         
-        # If not exists, create a new product with only part_number
         if not product:
             product = Produto(part_number=part_number)
             db.add(product)
@@ -16,9 +14,8 @@ def save_history(part_number: str, hash_code: str):
             db.refresh(product)
             print(f"✅ Product created with part_number={product.part_number}")
 
-        # Create history entry linked to the product
         new_history = Historico(
-            part_number=part_number,
+            produto_id=product.id,
             hash_code=hash_code,
             process_data=datetime.now()
         )
@@ -26,7 +23,7 @@ def save_history(part_number: str, hash_code: str):
         db.commit()
         db.refresh(new_history)
 
-        print(f"✅ History saved: id={new_history.id_historico}, part_number={new_history.part_number}, hash={new_history.hash_code}")
+        print(f"✅ History saved: id={new_history.id_historico}, product_id={new_history.produto_id}, hash={new_history.hash_code}")
         return new_history
     
     except Exception as e:
@@ -36,5 +33,5 @@ def save_history(part_number: str, hash_code: str):
     finally:
         db.close()
 
-if __name__ == "__main__":
-    save_history("PN12345", "abc123hash")
+
+

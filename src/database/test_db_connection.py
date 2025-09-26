@@ -1,4 +1,4 @@
-from database import SessionLocal, Base, engine
+from database import SessionLocal
 from models import Tipi, Produto, Historico
 
 def test_connection():

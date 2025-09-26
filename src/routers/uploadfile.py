@@ -25,11 +25,9 @@ async def create_upload_file(file: UploadFile = File(...)):
     _, ext = os.path.splitext(file.filename)
     file_path = os.path.join(UPLOAD_DIR, f"{file_hash}{ext}")
 
-    if os.path.exists(file_path):
-        raise HTTPException(status_code=400, detail="Arquivo já enviado")
-
-    with open(file_path, "wb") as f:
-        f.write(content)
+    if not os.path.exists(file_path):
+           with open(file_path, "wb") as f:
+            f.write(content)
 
     try:
         if ext.lower() == ".pdf":
