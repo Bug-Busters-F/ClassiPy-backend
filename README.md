@@ -1,2 +1,16 @@
-# classiFy-backend
-Back-end da aplicação WEB classiFy, produzida pela equipe Bug Busters, alunos do 4°semestre de Análise e Desenvolvimento de Sistemas, FATEC Jessen Vidal, São José dos Campos
+# ClassiPy - Backend
+
+Este é o repositório do backend da aplicação **ClassiPy**, um projeto desenvolvido pela equipe Bug Busters para o 4º semestre de Análise e Desenvolvimento de Sistemas.
+
+O ClassiPy é um Agente de Inteligência Artificial projetado para instruir e automatizar o Processo de Registro de Importação. A aplicação web tem como objetivo otimizar a elaboração de registros aduaneiros, um processo tradicionalmente manual e suscetível a erros que podem acarretar multas e penalidades.
+
+Este backend, desenvolvido com **Python**, **FastAPI** e **PostgreSQL**, é o cérebro da operação. Ele é responsável por:
+
+-   Servir a API REST que se comunica com o frontend.
+-   Receber e processar os uploads de documentos PDF.
+-   Integrar-se com o **Ollama** para executar os modelos de IA, extraindo Part Numbers e realizando a classificação detalhada dos produtos.
+-   Gerenciar toda a persistência de dados no banco de dados.
+
+O objetivo é fornecer uma API robusta, escalável e eficiente, garantindo que toda a lógica de negócio e o processamento inteligente de dados funcionem de maneira integrada e segura.
+
+---
