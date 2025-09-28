@@ -1,36 +1,52 @@
-from sqlalchemy import Column, Integer, String, Numeric, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, Boolean, Text
 from sqlalchemy.orm import relationship
-from database import Base
+from datetime import datetime
+from .database import Base
+
 
 class Tipi(Base):
     __tablename__ = "tipi"
 
     id_tipi = Column(Integer, primary_key=True, index=True)
-    descricao = Column(String(100))
-    aliquota = Column(Numeric(5, 2))
-    ncm = Column(String(8))
+    descricao = Column(Text, nullable=False)
+    aliquota = Column(Numeric(5, 2), nullable=False)
+    ncm = Column(String(8), nullable=False)
 
     produtos = relationship("Produto", back_populates="tipi")
+
+
+class Endereco(Base):
+    __tablename__ = "endereco"
+
+    id_endereco = Column(Integer, primary_key=True, index=True)
+    pais_origem = Column(String(80))
+    endereco_completo = Column(String(150))
+
+    produtos = relationship("Produto", back_populates="endereco")
 
 
 class Produto(Base):
     __tablename__ = "produto"
 
-    part_number = Column(String(25), primary_key=True, index=True)
-    nome = Column(String(100))
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    part_number = Column(String(25), nullable=False, unique=True)
+    descricao = Column(Text)
     fornecedor = Column(String(100))
-    pais_origem = Column(String(2))
+    status_produto = Column(Boolean, default=False)
     id_tipi = Column(Integer, ForeignKey("tipi.id_tipi"))
+    id_endereco = Column(Integer, ForeignKey("endereco.id_endereco"))
 
     tipi = relationship("Tipi", back_populates="produtos")
+    endereco = relationship("Endereco", back_populates="produtos")
     historicos = relationship("Historico", back_populates="produto")
 
 
 class Historico(Base):
     __tablename__ = "historico"
 
-    hash_code = Column(String(256))
-    process_data = Column(Date)
-    part_number = Column(String(25), ForeignKey("produto.part_number"), primary_key=True)
+    id_historico = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    hash_code = Column(String(256), nullable=False)
+    process_data = Column(DateTime, default=datetime.now)
+    produto_id = Column(Integer, ForeignKey("produto.id"), nullable=False)
 
     produto = relationship("Produto", back_populates="historicos")
