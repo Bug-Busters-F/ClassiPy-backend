@@ -1,32 +1,32 @@
 create table tipi (
-    id_tipi serial primary key,
-    descricao text,
-    aliquota numeric(5,2),
-    ncm char(8)
+    tipi_id serial primary key not null,
+    tipi_descricao text,
+    tipi_aliquota numeric(5,2),
+    tipi_ncm int
 );
 
-create table endereco (
-    id_endereco serial primary key,
-    pais_origem varchar(80),
-    endereco_completo varchar(150)
+create table fabricante (
+    fab_id serial primary key not null,
+    fab_nome varchar(100),
+    fab_endereco varchar(150),
+    fab_pais varchar(80)
 );
 
 create table produto (
-    id serial primary key,
-    part_number varchar(25) not null,
-    descricao text,
-    fornecedor varchar(100),
-    status_produto boolean default false,
-    id_tipi int,
-    id_endereco int,
-    constraint fk_produto_tipi foreign key (id_tipi) references tipi(id_tipi),
-    constraint fk_produto_endereco foreign key (id_endereco) references endereco(id_endereco)
+    pro_id serial primary key not null,
+    pro_descricao text,
+    pro_part_number varchar(25) not null,
+    pro_status char(20),
+    fabricante_fab_id int,
+    historico_hist_id int,
+    tipi_tipi_id int,
+    constraint fk_historica_hist_id foreign key (historico_hist_id) references historico (hist_id),
+    constraint fk_tipi_tipi_id foreign key (tipi_tipi_id) references tipi(tipi_id),
+    constraint fk_fabricante_fab_id foreign key (fabricante_fab_id) references fabricante(fab_id)
 );
 
 create table historico (
-    id_historico serial primary key,
-    hash_code varchar(256) not null,
-    process_data timestamp default current_timestamp,
-    produto_id int not null,
-    constraint fk_historico_produto foreign key (produto_id) references produto(id)
+    historico_id serial primary key,
+    hist_data_processamento timestamp,
+    hist_hash varchar (255)
 );
