@@ -35,7 +35,7 @@ class Produto(Base):
     pro_status = Column(String(20))
     fabricante_fab_id = Column(Integer, ForeignKey("fabricante.fab_id"))
     tipi_tipi_id = Column(Integer, ForeignKey("tipi.tipi_id"))
-    historico_hist_id = Column(Integer, ForeignKey("historico.hist_id"))
+    #historico_hist_id = Column(Integer, ForeignKey("historico.hist_id"))
 
     tipi = relationship("Tipi", back_populates="produtos")
     fabricante = relationship("Fabricante", back_populates="produtos")
@@ -48,5 +48,6 @@ class Historico(Base):
     hist_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     hist_data_processamento = Column(DateTime, default=datetime.now)
     hist_hash = Column(String(255))
+    produto_pro_id = Column(Integer, ForeignKey("produto.pro_id"))
 
     produto = relationship("Produto", back_populates="historicos")
