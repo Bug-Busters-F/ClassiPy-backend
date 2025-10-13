@@ -1,6 +1,6 @@
-from database import SessionLocal
+from .database import SessionLocal
 import time
-from models import Tipi, Produto, Historico, Fabricante
+from .models import Tipi, Produto, Historico, Fabricante
 
 def test_connection():
 

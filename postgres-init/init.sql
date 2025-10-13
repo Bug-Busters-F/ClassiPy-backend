@@ -12,6 +12,12 @@ create table fabricante (
     fab_pais varchar(80)
 );
 
+create table historico (
+    hist_id serial primary key,
+    hist_data_processamento timestamp,
+    hist_hash varchar (255)
+);
+
 create table produto (
     pro_id serial primary key not null,
     pro_descricao text,
@@ -20,13 +26,7 @@ create table produto (
     fabricante_fab_id int,
     historico_hist_id int,
     tipi_tipi_id int,
-    constraint fk_historica_hist_id foreign key (historico_hist_id) references historico (hist_id),
+    constraint fk_historico_hist_id foreign key (historico_hist_id) references historico (hist_id),
     constraint fk_tipi_tipi_id foreign key (tipi_tipi_id) references tipi(tipi_id),
     constraint fk_fabricante_fab_id foreign key (fabricante_fab_id) references fabricante(fab_id)
-);
-
-create table historico (
-    historico_id serial primary key,
-    hist_data_processamento timestamp,
-    hist_hash varchar (255)
 );

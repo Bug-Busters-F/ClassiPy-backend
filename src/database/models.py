@@ -33,9 +33,9 @@ class Produto(Base):
     pro_part_number = Column(String(25), nullable=False, unique=True)
     pro_descricao = Column(Text)
     pro_status = Column(String(20))
-    fabricante_fab_id(Integer, ForeignKey("fabricante.fab_id"))
+    fabricante_fab_id = Column(Integer, ForeignKey("fabricante.fab_id"))
     tipi_tipi_id = Column(Integer, ForeignKey("tipi.tipi_id"))
-    hist_id = Column(Integer, ForeignKey("historico.hist_id"))
+    historico_hist_id = Column(Integer, ForeignKey("historico.hist_id"))
 
     tipi = relationship("Tipi", back_populates="produtos")
     fabricante = relationship("Fabricante", back_populates="produtos")
