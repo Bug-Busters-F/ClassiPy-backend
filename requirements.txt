@@ -14,3 +14,6 @@ smolagents
 litellm==1.68.0
 ollama
 pdfplumber
+
+# Requirements do Banco de Dados Vetorial
+chromadb==1.1.1
