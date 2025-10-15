@@ -29,12 +29,12 @@ def addProduto(
         "status": db_historico.produto.pro_status,
         "classification": {
             "description": db_historico.produto.tipi.tipi_descricao,
-            "ncmCode": db_historico.produto.tipi.tipi_ncm,
+            "ncmCode": str(db_historico.produto.tipi.tipi_ncm),
             "taxRate": db_historico.produto.tipi.tipi_aliquota,
             "manufacturer": {
                 "name": db_historico.produto.fabricante.fab_nome,
                 "country": db_historico.produto.fabricante.fab_pais,
-                "addressId": db_historico.produto.fabricante.fab_endereco
+                "address": db_historico.produto.fabricante.fab_endereco
             }
         }
     }
