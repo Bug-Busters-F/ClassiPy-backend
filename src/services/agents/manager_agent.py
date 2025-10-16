@@ -36,7 +36,7 @@ def manager_agent():
         prompt_templates=prompt_templates,
         # verbosity_level=LogLevel.DEBUG,
         verbosity_level=LogLevel.INFO,
-        max_steps=6,
+        max_steps=2,
         planning_interval=3,
         return_full_result=True,
     )

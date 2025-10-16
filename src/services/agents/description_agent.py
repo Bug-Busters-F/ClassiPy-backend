@@ -2,7 +2,7 @@ from smolagents import CodeAgent, LogLevel
 from src.services.agents.ollama_model import ollama_model
 import yaml
 import os
-# Tools
+from typing import Any, Dict
 
 def description_agent():
     # Local Model Ollama
@@ -21,13 +21,12 @@ def description_agent():
                 "It interprets specifications and presents them in a user-friendly format."
         ),
         model=model,
-        tools=[
-            # Adicionar Ferramentas Aqui
-        ],
+        tools=[],
+        additional_authorized_imports=["json", "typing"],
         prompt_templates=prompt_templates,
         # verbosity_level=LogLevel.DEBUG,
         verbosity_level=LogLevel.INFO,
-        max_steps=6,
+        max_steps=2,
         planning_interval=3,
         return_full_result=True,
     )
