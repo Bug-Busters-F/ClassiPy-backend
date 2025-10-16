@@ -46,3 +46,19 @@ def createProduto(db: Session, produto_data: schemes.ProductCreate):
 
     # Retorna o histórico, que tem relação com todas as outras tabelas
     return db_historico
+
+def deleteProduto(db: Session, produto_id: int):
+    # Encontra o produto pelo ID e verifica se existe
+    db_produto = db.query(models.Produto).filter(models.Produto.pro_id == produto_id).first()
+
+    if not db_produto:
+        return None
+    
+    # Deleta registros da tabela Histórico que apontam pra esse produto
+    db.query(models.Historico).filter(models.Historico.produto_pro_id == produto_id).delete(synchronize_session=False)
+
+    # Deleta o produto e confirma a alteração no banco
+    db.delete(db_produto)
+    db.commit()
+
+    return db_produto

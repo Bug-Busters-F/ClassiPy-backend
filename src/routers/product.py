@@ -40,3 +40,14 @@ def addProduto(
     }
 
     return response
+
+@router.delete("/{produto_id}", status_code = 200)
+def delProduto(produto_id: int, db: Session = Depends(database.get_db)):
+    # Chama a função do CRUD
+    db_produto = crud.deleteProduto(db = db, produto_id = produto_id)
+
+    # Exceção caso produto não seja encontrado
+    if db_produto is None:
+        raise HTTPException(status_code= 404, detail = "Produto não encontrado.")
+    
+    return {"detail": f"Produto com Part Number '{db_produto.pro_part_number}' e seu histórico foram apagados com sucesso."}
