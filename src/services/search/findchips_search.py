@@ -5,6 +5,10 @@ import re
 from src.services.search.web_search import DuckDuckGoSearch
 
 class DuckDuckGoFindChips:
+    """
+    Realiza uma busca por um part number no DuckDuckGo, priorizando resultados
+    do site FindChips.
+    """
     def __init__(self, max_results: int = 3, **kwargs):
         self.max_results = max_results
         self.ddgs = DDGS(**kwargs)

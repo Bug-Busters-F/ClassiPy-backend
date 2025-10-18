@@ -1,8 +1,8 @@
 import re
 from markdownify import markdownify
-from src.services.search.browser_pool import BrowserPool
+from src.services.scraping.browser_pool import BrowserPool
 
-browser_pool = BrowserPool()  # instância única (pode ser criada na inicialização do app)
+browser_pool = BrowserPool()
 
 
 def VisitWebpage(url: str, max_length: int = 10000) -> str:
@@ -20,7 +20,7 @@ def VisitWebpage(url: str, max_length: int = 10000) -> str:
         markdown_content = re.sub(r"\n{3,}", "\n\n", markdown_content)
 
         if len(markdown_content) > max_length:
-            markdown_content = markdown_content[:max_length] + "\n\n...[conteúdo truncado]"
+            markdown_content = markdown_content[:max_length] + "\n\n...[content truncated]"
 
         return markdown_content
     except Exception as e:

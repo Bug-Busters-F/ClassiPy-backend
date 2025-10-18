@@ -9,7 +9,8 @@ pydantic-settings # Para gerenciar variáveis de ambiente
 # Requirements do Agente Ollama
 markdownify
 requests
-duckduckgo_search
+ddgs==9.6.1
+playwright==1.55.0 # playwright install chromium
 smolagents
 litellm==1.68.0
 ollama
