@@ -62,3 +62,37 @@ def deleteProduto(db: Session, produto_id: int):
     db.commit()
 
     return db_produto
+
+def updateProduto(db: Session, produto_id: int, produto_data: schemes.ProductUpdate):
+    # Encontra o produto pelo ID e verifica se existe
+    db_produto = db.query(models.Produto).filter(models.Produto.pro_id == produto_id).first()
+
+    if not db_produto:
+        return None
+    
+    # Acessa as tabelas relacionadas
+    db_fabricante = db_produto.fabricante
+    db_tipi = db_produto.tipi
+
+    # Atualiza os campos do Produto
+    db_produto.pro_part_number = produto_data.partNumber
+    db_produto.pro_descricao = produto_data.description
+    db_produto.pro_status = produto_data.status
+
+    # Atualiza os campos do Fabricante
+    if db_fabricante:
+        db_fabricante.fab_nome = produto_data.manufacturer.name
+        db_fabricante.fab_pais = produto_data.manufacturer.country
+        db_fabricante.fab_endereco = produto_data.manufacturer.address
+
+    # Atualiza os campos da TIPI
+    if db_tipi:
+        db_tipi.tipi_descricao = produto_data.classification.description
+        db_tipi.tipi_ncm = (produto_data.classification.ncm_code)
+        db_tipi.tipi_aliquota = produto_data.classification.tax_rate
+
+    # Confirma as alterações e atualiza a tabela Produto
+    db.commit()
+    db.refresh(db_produto)
+
+    return db_produto

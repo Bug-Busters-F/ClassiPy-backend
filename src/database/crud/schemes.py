@@ -57,3 +57,11 @@ class HistoryResponse(BaseModel):
         "from_attributes": True,
         "populate_by_name":True
         }
+
+# Esquema para atualização de um produto 
+class ProductUpdate(BaseModel):
+    partNumber: str
+    description: str
+    status: str
+    classification: ClassificationBase
+    manufacturer: ManufacturerBase

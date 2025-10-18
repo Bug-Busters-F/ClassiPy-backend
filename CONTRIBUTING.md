@@ -54,7 +54,36 @@ O primeiro passo é clonar o repositório do projeto para o seu ambiente local.
     DATABASE_URL=postgresql+psycopg2://root:root123@localhost:5432/classipy_database
     ```
 
-### 2. Rodando Backend, Postgres e Ollama via Docker
+### 2. Executando localmente
+
+1. Abra um terminal.
+
+2. Acesse o terminal do Postgres com usuário padrão
+   ```bash
+   psql -U postgres
+   ```
+
+3. Crie o banco de dados
+   ```sql
+   CREATE DATABASE classipy_database WITH OWNER = postgres;
+   ```
+
+4. Saia do terminal do Postgres
+   ```bash
+   \q
+   ```
+
+5. Acesse a pasta do projeto
+   ```bash
+   cd Classipy-backend
+   ```
+
+6. Crie as tabelas do banco
+   ```bash
+   psql -U postgres -d classipy_database -f postgres-init/init.sql
+   ```
+
+### 3. Executando Backend, Postgres e Ollama via Docker
 
 Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Compose**, sem precisar instalar nada manualmente.
 
@@ -77,7 +106,7 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```
    Substitua **nomeDoModelo** pelo modelo que você deseja usar.  
 
-### 3. Instalação utilizando um ambiente virtual `venv`
+### 4. Instalação utilizando um ambiente virtual `venv`
 
 1. Crie o ambiente virtual
 
@@ -105,12 +134,22 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```sh
    uvicorn src.main:app --reload
    ```
-   Ou execute o camando
+   Ou execute o comando
 
    ```sh
    python run.py
    ```
 
-4. Acesse a Aplicação
+4. Opcional: testar a conexão com o banco
+   ```sh
+   python -m src.database.test_db_connection
+   ```
+
+5. Opcional: preencher as tabelas com dados fictícios
+   ```sh
+   python seed_local.py
+   ```
+
+### 5. Acesse a Aplicação
 - O FastAPI está disponível em: [http://localhost:8000](http://localhost:8000)
 - Para testar rotas utilize: [http://localhost:8000/docs](http://localhost:8000/docs)

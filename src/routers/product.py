@@ -51,3 +51,46 @@ def delProduto(produto_id: int, db: Session = Depends(database.get_db)):
         raise HTTPException(status_code= 404, detail = "Produto não encontrado.")
     
     return {"detail": f"Produto com Part Number '{db_produto.pro_part_number}' e seu histórico foram apagados com sucesso."}
+
+@router.put("/{produto.id}", response_model = schemes.HistoryResponse)
+def updProduto(
+    produto_id: int,
+    produto_update_data: schemes.ProductUpdate,
+    db: Session = Depends(database.get_db)
+):
+    # Chama a função do CRUD
+    updated_produto = crud.updateProduto(db = db, produto_id = produto_id, produto_data = produto_update_data)
+
+    # Exceção caso produto não seja encontrado
+    if updated_produto is None:
+        raise HTTPException(status_code = 404, detail = "Produto não encontrado.")
+
+    # Pega registro de histórico mais recente associado ao produto
+    latest_historico = db.query(models.Historico)\
+        .filter(models.Historico.produto_pro_id == produto_id)\
+        .order_by(models.Historico.hist_data_processamento.desc())\
+        .first()
+    
+    if not latest_historico:
+        raise HTTPException(status_code = 404, detail = "Histórico para esse produto não encontrado.")
+
+    # Resposta esperada em JSON
+    response = {
+        "historyId": latest_historico.hist_id,
+        "fileHash": latest_historico.hist_hash,
+        "processedDate": latest_historico.hist_data_processamento,
+        "partNumber": updated_produto.pro_part_number,
+        "status": updated_produto.pro_status,
+        "classification": {
+            "description": updated_produto.tipi.tipi_descricao,
+            "ncmCode": str(updated_produto.tipi.tipi_ncm),
+            "taxRate": updated_produto.tipi.tipi_aliquota,
+            "manufacturer": {
+                "name": updated_produto.fabricante.fab_nome,
+                "country": updated_produto.fabricante.fab_pais,
+                "address": updated_produto.fabricante.fab_endereco
+            }
+        }
+    }
+
+    return response
