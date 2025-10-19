@@ -96,3 +96,11 @@ def updateProduto(db: Session, produto_id: int, produto_data: schemes.ProductUpd
     db.refresh(db_produto)
 
     return db_produto
+
+def getProduto(db: Session, produto_id: int):
+    # Encontra o produto pelo ID
+    return db.query(models.Produto).filter(models.Produto.pro_id == produto_id).first()
+
+def listHistorico(db: Session, skip: int = 0, limit: int = 100):
+    # Busca todos os registros do histórico, com um limite pra evitar sobrecarga
+    return db.query(models.Historico).order_by(models.Historico.hist_id.desc()).offset(skip).limit(limit).all()
