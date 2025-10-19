@@ -57,7 +57,21 @@ class HistoryResponse(BaseModel):
         "from_attributes": True,
         "populate_by_name":True
         }
+    
+class HistoryCreate(BaseModel):
+    partNumber: str
+    fileHash: str
 
+class HistoryCreateResponse(BaseModel):
+    pro_id: int
+    partNumber: str
+    fileHash: str
+
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True
+    }
+    
 # Esquema para atualização de um produto 
 class ProductUpdate(BaseModel):
     partNumber: str

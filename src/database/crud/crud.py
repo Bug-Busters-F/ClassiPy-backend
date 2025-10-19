@@ -104,3 +104,31 @@ def getProduto(db: Session, produto_id: int):
 def listHistorico(db: Session, skip: int = 0, limit: int = 100):
     # Busca todos os registros do histórico, com um limite pra evitar sobrecarga
     return db.query(models.Historico).order_by(models.Historico.hist_id.desc()).offset(skip).limit(limit).all()
+
+# Nova versão da lógica do savePN.py
+def saveHistorico(db: Session, part_number: str, file_hash: str):
+    # Verifica se o produto já existe
+    db_produto = db.query(models.Produto).filter(models.Produto.pro_part_number == part_number).first()
+
+    # Se não existir, cria um novo
+    if not db_produto:
+        db_produto = models.Produto(
+            pro_part_number = part_number,
+            pro_status = "revisao",
+            tipi_tipi_id = None,
+            fabricante_fab_id = None
+        )
+        db.add(db_produto)
+        db.commit()
+        db.refresh(db_produto)
+
+    # Cria o novo registro de histórico, ligando ao produto
+    db_historico = models.Historico(
+        hist_hash = file_hash,
+        produto_pro_id = db_produto.pro_id
+    )
+    db.add(db_historico)
+    db.commit()
+    db.refresh(db_historico)
+
+    return db_produto

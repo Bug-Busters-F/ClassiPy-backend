@@ -1,45 +1,37 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..database import database, models
 from ..database.crud import schemes, crud
+from typing import List
 
 router = APIRouter(
     prefix="/historico",
     tags=["Histórico"]
 )
 
-@router.post("/", response_model = schemes.HistoryResponse)
-def addProduto(
-    produto: schemes.ProductCreate,
+@router.post("/", response_model = List[schemes.HistoryCreateResponse], status_code = status.HTTP_201_CREATED)
+def createHistoryEntries(
+    items: List[schemes.HistoryCreate],
     db: Session = Depends(database.get_db)
 ):
-    db_produto_existente = db.query(models.Produto).filter(models.Produto.pro_part_number == produto.partNumber).first()
-    if db_produto_existente:
-        raise HTTPException(status_code = 400, detail = "Part Number já cadastrado.")
     
-    # Chamando a função do CRUD
-    db_historico = crud.createProduto(db = db, produto_data = produto)
+    created_items = []
+    for item in items:
+        # Chama a função do CRUD para cada item da lista
+        produto_processado = crud.saveHistorico(
+            db = db,
+            part_number = item.partNumber,
+            file_hash = item.fileHash
+        )
 
-    # Resposta esperada em JSON
-    response = {
-        "historyId": db_historico.hist_id,
-        "fileHash": db_historico.hist_hash,
-        "processedDate": db_historico.hist_data_processamento,
-        "partNumber": db_historico.produto.pro_part_number,
-        "status": db_historico.produto.pro_status,
-        "classification": {
-            "description": db_historico.produto.tipi.tipi_descricao,
-            "ncmCode": str(db_historico.produto.tipi.tipi_ncm),
-            "taxRate": db_historico.produto.tipi.tipi_aliquota,
-            "manufacturer": {
-                "name": db_historico.produto.fabricante.fab_nome,
-                "country": db_historico.produto.fabricante.fab_pais,
-                "address": db_historico.produto.fabricante.fab_endereco
-            }
-        }
-    }
+        # Adiciona o resultado à lista de resposta
+        created_items.append({
+            "pro_id": produto_processado.pro_id,
+            "partNumber": produto_processado.pro_part_number,
+            "fileHash": item.fileHash
+        })
 
-    return response
+    return created_items
 
 @router.delete("/{id}", status_code = 200)
 def delProduto(id: int, db: Session = Depends(database.get_db)):
