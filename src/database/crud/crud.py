@@ -101,6 +101,10 @@ def getProduto(db: Session, produto_id: int):
     # Encontra o produto pelo ID
     return db.query(models.Produto).filter(models.Produto.pro_id == produto_id).first()
 
+def listProdutos(db: Session, skip: int = 0, limit: int = 100):
+    # Busca todos os registros da tabela produto
+    return db.query(models.Produto).order_by(models.Produto.pro_id.desc()).offset(skip).limit(limit).all()
+
 def listHistorico(db: Session, skip: int = 0, limit: int = 100):
     # Busca todos os registros do histórico, com um limite pra evitar sobrecarga
     return db.query(models.Historico).order_by(models.Historico.hist_id.desc()).offset(skip).limit(limit).all()

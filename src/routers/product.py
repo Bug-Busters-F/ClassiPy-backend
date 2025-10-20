@@ -9,6 +9,11 @@ router = APIRouter(
     tags=["Histórico"]
 )
 
+router_produto = APIRouter(
+    prefix="/produtos",
+    tags=["Produtos"]
+)
+
 @router.post("/", response_model = List[schemes.HistoryCreateResponse], status_code = status.HTTP_201_CREATED)
 def createHistoryEntries(
     items: List[schemes.HistoryCreate],
@@ -161,5 +166,44 @@ def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(databas
             "classification": classification_data
         }
         results.append(response_item)
+
+    return results
+
+@router_produto.get("/", response_model = List[schemes.HistoryResponse])
+def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
+    produtos = crud.listProdutos(db, skip = skip, limit = limit)
+
+    results = []
+    for produto in produtos:
+        # Para cada produto, pega o histórico mais recente
+        latest_historico = db.query(models.Historico)\
+        .filter(models.Historico.produto_pro_id == produto.pro_id)\
+        .order_by(models.Historico.hist_data_processamento.desc())\
+        .first()
+
+        if not latest_historico:
+            continue
+
+        classification_data = None
+        if produto.tipi and produto.fabricante:
+            classification_data = {
+                "description": produto.tipi.tipi_descricao,
+                "ncmCode": str(produto.tipi.tipi_ncm),
+                "taxRate": produto.tipi.tipi_aliquota,
+                "manufacturer": {
+                    "name": produto.fabricante.fab_nome,
+                    "country": produto.fabricante.fab_pais,
+                    "address": produto.fabricante.fab_endereco
+                }
+            }
+
+        results.append({
+            "historyId": latest_historico.hist_id,
+            "fileHash": latest_historico.hist_hash,
+            "processedDate": latest_historico.hist_data_processamento,
+            "partNumber": produto.pro_part_number,
+            "status": produto.pro_status,
+            "classification": classification_data
+        })
 
     return results
