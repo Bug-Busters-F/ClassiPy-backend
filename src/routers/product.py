@@ -105,14 +105,9 @@ def readProduto(id: int, db: Session = Depends(database.get_db)):
     if not latest_historico:
         raise HTTPException(status_code = 404, detail = "Histórico para esse produto não encontrado.")
     
-    # Resposta esperada em JSON
-    response = {
-        "historyId": latest_historico.hist_id,
-        "fileHash": latest_historico.hist_hash,
-        "processedDate": latest_historico.hist_data_processamento,
-        "partNumber": db_produto.pro_part_number,
-        "status": db_produto.pro_status,
-        "classification": {
+    classification_data = None
+    if db_produto.tipi and db_produto.fabricante:
+        classification_data = {
             "description": db_produto.tipi.tipi_descricao,
             "ncmCode": str(db_produto.tipi.tipi_ncm),
             "taxRate": db_produto.tipi.tipi_aliquota,
@@ -122,6 +117,15 @@ def readProduto(id: int, db: Session = Depends(database.get_db)):
                 "address": db_produto.fabricante.fab_endereco
             }
         }
+
+    # Resposta esperada em JSON
+    response = {
+        "historyId": latest_historico.hist_id,
+        "fileHash": latest_historico.hist_hash,
+        "processedDate": latest_historico.hist_data_processamento,
+        "partNumber": db_produto.pro_part_number,
+        "status": db_produto.pro_status,
+        "classification": classification_data
     }
 
     return response
@@ -134,14 +138,10 @@ def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(databas
     for historico in historico_list:
         db_produto = historico.produto
 
+        classification_data = None
         # Monta o objeto de resposta para cada item do histórico
-        response_item = {
-            "historyId": historico.hist_id,
-            "fileHash": historico.hist_hash,
-            "processedDate": historico.hist_data_processamento,
-            "partNumber": db_produto.pro_part_number,
-            "status": db_produto.pro_status,
-            "classification": {
+        if db_produto.tipi and db_produto.fabricante:
+            classification_data = {
                 "description": db_produto.tipi.tipi_descricao,
                 "ncmCode": str(db_produto.tipi.tipi_ncm),
                 "taxRate": db_produto.tipi.tipi_aliquota,
@@ -151,6 +151,14 @@ def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(databas
                     "address": db_produto.fabricante.fab_endereco
                 }
             }
+
+        response_item = {
+            "historyId": historico.hist_id,
+            "fileHash": historico.hist_hash,
+            "processedDate": historico.hist_data_processamento,
+            "partNumber": db_produto.pro_part_number,
+            "status": db_produto.pro_status,
+            "classification": classification_data
         }
         results.append(response_item)
 
