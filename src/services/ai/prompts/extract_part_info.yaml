@@ -26,5 +26,6 @@ instruction: |
   - Do not add extra commentary or explanations.
   - Do not invent any information not present in the text.
   - The output must be valid JSON and parsable by standard JSON parsers.
+  - Return only **ONE** JSON.
 
   Text:

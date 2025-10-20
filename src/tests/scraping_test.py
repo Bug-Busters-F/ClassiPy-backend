@@ -10,3 +10,5 @@ content = ""
 for link in links:
     content = VisitWebpage(link)
     print(content)
+
+# Para testar o comando é 'python -m src.tests.scraping_test'

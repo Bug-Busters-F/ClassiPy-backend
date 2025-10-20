@@ -16,3 +16,5 @@ print(conteudo)
 print("\n\n")
 print("Resposta do Ollama:")
 print(run_ollama("extract_part_info",conteudo))
+
+# Para testar o comando é 'python -m src.tests.description_test'
