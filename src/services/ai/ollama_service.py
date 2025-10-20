@@ -5,6 +5,7 @@ import json
 import re
 from dotenv import load_dotenv
 
+
 load_dotenv()
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 
@@ -19,9 +20,11 @@ def load_prompt(prompt_name: str) -> str:
         data = yaml.safe_load(f)
     return data["instruction"]
 
+
+
 def run_ollama(prompt_name: str, text: str) -> dict:
     """
-    Executa um prompt do Ollama e retorna JSON decodificado.
+    Executa um prompt do Ollama e retorna o JSON decodificado.
     """
     base_prompt = load_prompt(prompt_name)
     full_prompt = f"{base_prompt}\n\nText:\n{text.strip()}"
@@ -29,15 +32,20 @@ def run_ollama(prompt_name: str, text: str) -> dict:
     try:
         result = ollama.generate(model=OLLAMA_MODEL, prompt=full_prompt)
         raw_output = result["response"]
+        print(raw_output)
     except Exception as e:
         return {"error": f"Erro ao executar o modelo: {e}"}
 
-    # Extrai JSON do texto retornado
-    match = re.search(r"\{[\s\S]*?\}", raw_output)
+    # Extrai o JSON do texto retornado
+    match = re.search(r"\{[\s\S]*\}", raw_output)
     if not match:
         return {"error": "JSON não encontrado", "raw_output": raw_output}
 
+    json_str = match.group()
+
+    # Tenta converter a string em objeto Python
     try:
-        return json.loads(match.group())
-    except json.JSONDecodeError:
-        return {"error": "Falha ao decodificar JSON", "raw_output": raw_output}
+        parsed_json = json.loads(json_str)
+        return parsed_json
+    except json.JSONDecodeError as e:
+        return {"error": f"Falha ao decodificar JSON: {e}", "raw_output": json_str}
