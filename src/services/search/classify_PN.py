@@ -48,4 +48,4 @@ if __name__ == "__main__":
     result_json = classify_PN(pn_code)
     print(result_json)
 
-#Para testar execute "python -m src.services.search.ncm"
+#Para testar execute "python -m src.services.search.classyfy_PN"
