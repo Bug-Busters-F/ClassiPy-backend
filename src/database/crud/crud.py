@@ -111,28 +111,39 @@ def listHistorico(db: Session, skip: int = 0, limit: int = 100):
 
 # Nova versão da lógica do savePN.py
 def saveHistorico(db: Session, part_number: str, file_hash: str):
-    # Verifica se o produto já existe
-    db_produto = db.query(models.Produto).filter(models.Produto.pro_part_number == part_number).first()
+    try:
+        # Verifica se o produto já existe
+        db_produto = db.query(models.Produto).filter(models.Produto.pro_part_number == part_number).first()
 
-    # Se não existir, cria um novo
-    if not db_produto:
-        db_produto = models.Produto(
-            pro_part_number = part_number,
-            pro_status = "revisao",
-            tipi_tipi_id = None,
-            fabricante_fab_id = None
-        )
-        db.add(db_produto)
-        db.commit()
-        db.refresh(db_produto)
+        # Se não existir, cria um novo
+        if not db_produto:
+            db_produto = models.Produto(
+                pro_part_number = part_number,
+                pro_status = "revisao",
+                tipi_tipi_id = None,
+                fabricante_fab_id = None
+            )
+            db.add(db_produto)
+            db.flush()
 
-    # Cria o novo registro de histórico, ligando ao produto
-    db_historico = models.Historico(
-        hist_hash = file_hash,
-        produto_pro_id = db_produto.pro_id
-    )
-    db.add(db_historico)
-    db.commit()
-    db.refresh(db_historico)
+        # Cria o novo registro de histórico, ligando ao produto
+        db_historico = db.query(models.Historico).filter(
+            models.Historico.hist_hash == file_hash, 
+            models.Historico.produto_pro_id == db_produto.pro_id).first()
 
-    return db_produto
+        if not db_historico:
+            db_historico = models.Historico(
+                hist_hash = file_hash,
+                produto_pro_id = db_produto.pro_id
+            )
+            db.add(db_historico)
+            db.commit()
+            db.refresh(db_produto)
+            db.refresh(db_historico)
+
+        return db_produto
+    
+    # Caso dê errado, desfaz as mudanças e propaga o erro
+    except Exception as e:
+        db.rollback()
+        raise e
