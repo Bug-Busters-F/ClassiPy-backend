@@ -9,6 +9,9 @@ def process_part_number(part_number: str, info: bool = False):
     try:
         links = search_tool_findchips.search(part_number)
         
+        if not links:
+            return {"erro: [ERRO] Nenhum link encontrado para o PN '{part_number}'"}
+        
         contents = []
         for link in links:
             try:
@@ -26,7 +29,6 @@ def process_part_number(part_number: str, info: bool = False):
             print("\n---------------------------------------------------------------------\nConteudo raspado:")
             print(full_content)
             print("\n---------------------------------------------------------------------\nResposta do Ollama:")
-            # print(response)
         
         return response
     
