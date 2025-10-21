@@ -99,6 +99,10 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```sh
    pip install -r requirements.txt
    ```
+   - Instale o navegador necessário para o Playwright
+   ```sh
+   playwright install chromium
+   ```
 
 3. Execute a aplicação
 
