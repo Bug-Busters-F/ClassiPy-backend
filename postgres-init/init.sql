@@ -16,7 +16,7 @@ create table produto (
     pro_id serial primary key not null,
     pro_descricao text,
     pro_part_number varchar(25) not null,
-    pro_status char(20),
+    pro_status varchar(20),
     fabricante_fab_id int,
 --    historico_hist_id int,
     tipi_tipi_id int,

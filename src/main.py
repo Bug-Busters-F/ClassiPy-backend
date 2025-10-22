@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.routers import template, uploadfile
+from src.routers import template, uploadfile, agent, product
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -22,3 +22,6 @@ def read_root():
 
 app.include_router(template.router, prefix="/template")
 app.include_router(uploadfile.router, prefix="/uploadfile")
+app.include_router(agent.router, prefix="/agent")
+app.include_router(product.router)
+app.include_router(product.router_historico)
