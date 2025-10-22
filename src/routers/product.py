@@ -5,13 +5,13 @@ from ..database.crud import schemes, crud
 from typing import List
 
 router = APIRouter(
-    prefix="/historico",
-    tags=["Histórico"]
+    prefix="/produto",
+    tags=["Produto"]
 )
 
-router_produto = APIRouter(
-    prefix="/produtos",
-    tags=["Produtos"]
+router_historico = APIRouter(
+    prefix="/historico",
+    tags=["Histórico"]
 )
 
 @router.post("/", response_model = List[schemes.HistoryCreateResponse], status_code = status.HTTP_201_CREATED)
@@ -169,7 +169,7 @@ def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(databas
 
     return results
 
-@router_produto.get("/", response_model = List[schemes.HistoryResponse])
+@router_historico.get("/", response_model = List[schemes.HistoryResponse])
 def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     produtos = crud.listProdutos(db, skip = skip, limit = limit)
 
