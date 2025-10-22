@@ -39,12 +39,12 @@ async def create_upload_file(file: UploadFile = File(...)):
                     pdf_text = " ".join([p["text"] for p in page_words])
                     result = read_pdf.find_PN_and_Adress_with_ai(pdf_text)
                 else:
-                    result = read_pdf.find_pn(page)
+                    result = json.loads(read_pdf.find_pn(page))
         else:
             result = "Arquivo não é PDF. Apenas PDFs são analisados."
             return json.load(result)
 
-        response = json.loads(result)
+        response = result
         response["hash_code"] = file_hash
         return response
     except Exception as e:

@@ -128,8 +128,19 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```sh
    pip install -r requirements.txt
    ```
+   - Instale o navegador necessário para o Playwright
+   ```sh
+   playwright install chromium
+   ```
 
-3. Execute a aplicação
+3. Crie o banco vetorial
+
+   ```sh
+   python src/table_tipi/table_tipi.py
+   ```
+   
+
+4. Execute a aplicação
 
    ```sh
    uvicorn src.main:app --reload
@@ -139,6 +150,7 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```sh
    python run.py
    ```
+
 
 4. Opcional: testar a conexão com o banco
    ```sh

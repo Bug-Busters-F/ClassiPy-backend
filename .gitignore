@@ -219,3 +219,6 @@ __marimo__/
 
 #Uploads Folder
 uploads/
+
+#Chromadb
+src/database/chroma_db
