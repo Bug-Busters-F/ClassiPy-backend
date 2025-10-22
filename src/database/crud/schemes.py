@@ -79,3 +79,14 @@ class ProductUpdate(BaseModel):
     status: str
     classification: ClassificationBase
     manufacturer: ManufacturerBase
+
+class ClassificationResponse(BaseModel):
+    ncm: str
+    descricao: str
+    fabricante: str
+    aliquota: float
+    descricao_ncm: str
+    
+    model_config = {
+        "from_attributes": True
+    }
