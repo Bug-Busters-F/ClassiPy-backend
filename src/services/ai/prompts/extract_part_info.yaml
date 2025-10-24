@@ -12,6 +12,8 @@ instruction: |
   2. Generate a **concise technical description in Portuguese (pt-BR)** based solely on the keywords.
      - Must be accurate and professional.
      - Do not add reasoning, notes, or commentary.
+     - Must describe what the part with no unnecessary information.
+     - Keep the text small and simple.
 
   3. **STRICTLY RETURN ONLY JSON** with this exact structure:
   

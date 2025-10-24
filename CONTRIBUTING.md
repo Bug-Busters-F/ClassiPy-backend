@@ -133,14 +133,7 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    playwright install chromium
    ```
 
-3. Crie o banco vetorial
-
-   ```sh
-   python src/table_tipi/table_tipi.py
-   ```
-   
-
-4. Execute a aplicação
+3. Execute a aplicação
 
    ```sh
    uvicorn src.main:app --reload
@@ -150,7 +143,6 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```sh
    python run.py
    ```
-
 
 4. Opcional: testar a conexão com o banco
    ```sh
@@ -163,5 +155,6 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```
 
 ### 5. Acesse a Aplicação
+
 - O FastAPI está disponível em: [http://localhost:8000](http://localhost:8000)
 - Para testar rotas utilize: [http://localhost:8000/docs](http://localhost:8000/docs)
