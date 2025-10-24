@@ -16,9 +16,9 @@ def classify_PN(pn_code):
 
     query_text = " ".join(key_words)
 
-    print(query_text)
+   ## print(query_text)
 
-    results = search_ncm(query_text)
+    results = search_ncm(descricao)
     if not results:
         return {"error": "Nenhum NCM encontrado para as palavras-chave geradas."}
 
@@ -44,8 +44,8 @@ def classify_PN(pn_code):
 
 # Exemplo de uso
 if __name__ == "__main__":
-    pn_code = "CL10C330JB8NNNC"
+    pn_code = "597-2401-407F"
     result_json = classify_PN(pn_code)
     print(result_json)
 
-#Para testar execute "python -m src.services.search.classyfy_PN"
+#Para testar execute "python -m src.services.search.classify_PN"

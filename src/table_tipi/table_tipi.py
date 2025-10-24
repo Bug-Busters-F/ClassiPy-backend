@@ -2,13 +2,17 @@ import pandas as pd
 import re
 import chromadb
 from chromadb.utils import embedding_functions
+import time
 
 CSV_PATH = "src/table_tipi/tipi.csv"
 CHROMA_DB_PATH = "src/database/chroma_db"
 COLLECTION_NAME = "ncm_eletronicos"
+BATCH_SIZE = 10 
 
+# -------------------------
+# Carrega CSV e normaliza
+# -------------------------
 df = pd.read_csv(CSV_PATH, dtype=str).fillna("")
-
 df["NCM_NORMALIZED"] = df["NCM"].str.replace(".", "", regex=False).str.strip()
 df["NCM_DIGITS"] = df["NCM_NORMALIZED"].str.replace(r"\D", "", regex=True)
 df["NIVEL"] = df["NCM_DIGITS"].str.len()
@@ -29,8 +33,6 @@ def find_parent(ncm_digits):
 df["NCM_PAI"] = df["NCM_DIGITS"].apply(find_parent)
 
 def get_context_chain(ncm, df, descricao_map):
-    """Retorna descrições concatenadas do pai até o filho."""
-    ncm_digits = re.sub(r"\D", "", ncm)
     chain = []
     current = ncm
     while True:
@@ -44,20 +46,20 @@ def get_context_chain(ncm, df, descricao_map):
     return " ".join(reversed(chain))
 
 df_nivel8 = df[df["NIVEL"] == 8].copy()
-
 df_nivel8["Aliquota"] = df_nivel8["Aliquota"].replace("", "0")
 df_nivel8["DOCUMENTO"] = df_nivel8.apply(
     lambda row: f"{get_context_chain(row['NCM'], df, descricao_map)} (Alíquota: {row['Aliquota']}%)",
     axis=1
 )
 
+ollama_embed = embedding_functions.OllamaEmbeddingFunction(model_name="bge-m3")
 client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
-
 collection = client.get_or_create_collection(
     name=COLLECTION_NAME,
-    embedding_function=embedding_functions.DefaultEmbeddingFunction()
+    embedding_function=ollama_embed
 )
 
+# Limpa coleção existente
 try:
     existing = collection.count()
     if existing > 0:
@@ -66,10 +68,17 @@ try:
 except Exception:
     pass
 
-collection.add(
-    ids=[str(i) for i in range(len(df_nivel8))],
-    documents=df_nivel8["DOCUMENTO"].tolist(),
-    metadatas=df_nivel8[["NCM", "NCM_PAI", "Aliquota"]].to_dict(orient="records")
-)
+# -------------------------
+# Insere dados em batches pequenos
+# -------------------------
+for i in range(0, len(df_nivel8), BATCH_SIZE):
+    batch = df_nivel8.iloc[i:i+BATCH_SIZE]
+    collection.add(
+        ids=[str(j) for j in range(i, i + len(batch))],
+        documents=batch["DOCUMENTO"].tolist(),
+        metadatas=batch[["NCM", "NCM_PAI", "Aliquota"]].to_dict(orient="records")
+    )
+    print(f"Batch {i//BATCH_SIZE + 1} inserido ({len(batch)} registros).")
+    time.sleep(0.5)
 
-print(f"Inserção concluída: {len(df_nivel8)} NCMs de 8 dígitos adicionados!")
+print(f"\n✅ Inserção concluída: {len(df_nivel8)} NCMs de 8 dígitos adicionados!")

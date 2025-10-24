@@ -1,12 +1,21 @@
 import chromadb
+from chromadb.utils import embedding_functions
 
 CHROMA_DB_PATH = "src/database/chroma_db"
 COLLECTION_NAME = "ncm_eletronicos"
 
-client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
-collection = client.get_collection(COLLECTION_NAME)
 
-def search_ncm(query: str, top_k: int = 1):
+ollama_embed = embedding_functions.OllamaEmbeddingFunction(model_name="bge-m3")
+
+
+client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+
+collection = client.get_collection(
+    name=COLLECTION_NAME,
+    embedding_function=ollama_embed
+)
+
+def search_ncm(query: str, top_k: int = 3):
     results = collection.query(
         query_texts=[query],
         n_results=top_k
@@ -31,7 +40,7 @@ def search_ncm(query: str, top_k: int = 1):
 # EXEMPLO DE USO
 # -------------------------
 if __name__ == "__main__":
-    query_text = "Aspirador de pó elétrico 3000W"
+    query_text = "Transistor"
     results = search_ncm(query_text)
 
     print(f"\n🔍 Consulta: {query_text}\n")
