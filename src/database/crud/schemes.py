@@ -46,6 +46,7 @@ class ResponseClassification(BaseModel):
         }
 
 class HistoryResponse(BaseModel):
+    pro_id: Optional[int] = None
     historyId: int
     fileHash: str
     processedDate: datetime
