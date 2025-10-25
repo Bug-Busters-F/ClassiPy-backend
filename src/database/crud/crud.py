@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from .. import models
 from . import schemes
 
@@ -64,36 +64,51 @@ def deleteProduto(db: Session, produto_id: int):
     return db_produto
 
 def updateProduto(db: Session, produto_id: int, produto_data: schemes.ProductUpdate):
-    # Encontra o produto pelo ID e verifica se existe
-    db_produto = db.query(models.Produto).filter(models.Produto.pro_id == produto_id).first()
+    db_produto = db.query(models.Produto).options(
+        joinedload(models.Produto.tipi), 
+        joinedload(models.Produto.fabricante)
+    ).filter(models.Produto.pro_id == produto_id).first()
 
     if not db_produto:
         return None
     
-    # Acessa as tabelas relacionadas
-    db_fabricante = db_produto.fabricante
-    db_tipi = db_produto.tipi
+    db_tipi = db.query(models.Tipi).filter(models.Tipi.tipi_ncm == produto_data.classification.ncm_code).first()
+    
+    if not db_tipi:
+        db_tipi = models.Tipi(
+            tipi_ncm = produto_data.classification.ncm_code,
+            tipi_descricao = produto_data.classification.description,
+            tipi_aliquota = produto_data.classification.tax_rate
+        )
+        db.add(db_tipi)
+        db.flush()
+    else:
+        db_tipi.tipi_descricao = produto_data.classification.description
+        db_tipi.tipi_aliquota = produto_data.classification.tax_rate
 
-    # Atualiza os campos do Produto
-    db_produto.pro_part_number = produto_data.partNumber
-    db_produto.pro_descricao = produto_data.description
-    db_produto.pro_status = produto_data.status
+    db_fabricante = db.query(models.Fabricante).filter(models.Fabricante.fab_nome == produto_data.manufacturer.name).first()
 
-    # Atualiza os campos do Fabricante
-    if db_fabricante:
-        db_fabricante.fab_nome = produto_data.manufacturer.name
+    if not db_fabricante:
+        db_fabricante = models.Fabricante(
+            fab_nome = produto_data.manufacturer.name,
+            fab_pais = produto_data.manufacturer.country,
+            fab_endereco = produto_data.manufacturer.address
+        )
+        db.add(db_fabricante)
+        db.flush() 
+    else:
         db_fabricante.fab_pais = produto_data.manufacturer.country
         db_fabricante.fab_endereco = produto_data.manufacturer.address
 
-    # Atualiza os campos da TIPI
-    if db_tipi:
-        db_tipi.tipi_descricao = produto_data.classification.description
-        db_tipi.tipi_ncm = (produto_data.classification.ncm_code)
-        db_tipi.tipi_aliquota = produto_data.classification.tax_rate
-
-    # Confirma as alterações e atualiza a tabela Produto
+    db_produto.pro_part_number = produto_data.partNumber
+    db_produto.pro_descricao = produto_data.description
+    db_produto.pro_status = produto_data.status
+    
+    db_produto.tipi = db_tipi             
+    db_produto.fabricante = db_fabricante 
     db.commit()
-    db.refresh(db_produto)
+    
+    db.refresh(db_produto) 
 
     return db_produto
 

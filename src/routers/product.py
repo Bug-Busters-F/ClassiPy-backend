@@ -198,6 +198,7 @@ def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.
             }
 
         results.append({
+            "pro_id": produto.pro_id,
             "historyId": latest_historico.hist_id,
             "fileHash": latest_historico.hist_hash,
             "processedDate": latest_historico.hist_data_processamento,

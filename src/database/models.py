@@ -10,7 +10,7 @@ class Tipi(Base):
     tipi_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     tipi_descricao = Column(Text, nullable=False)
     tipi_aliquota = Column(Numeric(5, 2), nullable=False)
-    tipi_ncm = Column(Integer, nullable=False)
+    tipi_ncm = Column(String(50), nullable=False)
 
     produtos = relationship("Produto", back_populates="tipi")
 
