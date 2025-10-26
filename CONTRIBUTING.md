@@ -104,7 +104,12 @@ Você pode rodar o **backend**, o **Postgres** e o **Ollama** usando **Docker Co
    ```bash
    docker compose exec ollama ollama pull nomeDoModelo
    ```
-   Substitua **nomeDoModelo** pelo modelo que você deseja usar.  
+   Substitua **nomeDoModelo** pelo modelo que você deseja usar. 
+
+   E também baixe **bge-m3**
+   ```bash
+   docker compose exec ollama ollama pull bge-m3
+   ```
 
 ### 4. Instalação utilizando um ambiente virtual `venv`
 
