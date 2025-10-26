@@ -7,46 +7,47 @@ from .database import Base
 class Tipi(Base):
     __tablename__ = "tipi"
 
-    id_tipi = Column(Integer, primary_key=True, index=True)
-    descricao = Column(Text, nullable=False)
-    aliquota = Column(Numeric(5, 2), nullable=False)
-    ncm = Column(String(8), nullable=False)
+    tipi_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    tipi_descricao = Column(Text, nullable=False)
+    tipi_aliquota = Column(Numeric(5, 2), nullable=False)
+    tipi_ncm = Column(String(50), nullable=False)
 
     produtos = relationship("Produto", back_populates="tipi")
 
 
-class Endereco(Base):
-    __tablename__ = "endereco"
+class Fabricante(Base):
+    __tablename__ = "fabricante"
 
-    id_endereco = Column(Integer, primary_key=True, index=True)
-    pais_origem = Column(String(80))
-    endereco_completo = Column(String(150))
+    fab_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    fab_nome = Column(String(100))
+    fab_endereco = Column(String(150))
+    fab_pais = Column(String(80))
 
-    produtos = relationship("Produto", back_populates="endereco")
+    produtos = relationship("Produto", back_populates="fabricante")
 
 
 class Produto(Base):
     __tablename__ = "produto"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    part_number = Column(String(25), nullable=False, unique=True)
-    descricao = Column(Text)
-    fornecedor = Column(String(100))
-    status_produto = Column(Boolean, default=False)
-    id_tipi = Column(Integer, ForeignKey("tipi.id_tipi"))
-    id_endereco = Column(Integer, ForeignKey("endereco.id_endereco"))
+    pro_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    pro_part_number = Column(String(25), nullable=False, unique=True)
+    pro_descricao = Column(Text)
+    pro_status = Column(String(20))
+    fabricante_fab_id = Column(Integer, ForeignKey("fabricante.fab_id"))
+    tipi_tipi_id = Column(Integer, ForeignKey("tipi.tipi_id"))
+    #historico_hist_id = Column(Integer, ForeignKey("historico.hist_id"))
 
     tipi = relationship("Tipi", back_populates="produtos")
-    endereco = relationship("Endereco", back_populates="produtos")
+    fabricante = relationship("Fabricante", back_populates="produtos")
     historicos = relationship("Historico", back_populates="produto")
 
 
 class Historico(Base):
     __tablename__ = "historico"
 
-    id_historico = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    hash_code = Column(String(256), nullable=False)
-    process_data = Column(DateTime, default=datetime.now)
-    produto_id = Column(Integer, ForeignKey("produto.id"), nullable=False)
+    hist_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    hist_data_processamento = Column(DateTime, default=datetime.now)
+    hist_hash = Column(String(255))
+    produto_pro_id = Column(Integer, ForeignKey("produto.pro_id"))
 
     produto = relationship("Produto", back_populates="historicos")

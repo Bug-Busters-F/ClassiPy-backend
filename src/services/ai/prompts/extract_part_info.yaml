@@ -1,0 +1,36 @@
+name: extract_part_info
+instruction: |
+  You are a technical assistant specialized in electronic components.
+  The following text, written in English, describes a part extracted from a supplier's website.
+
+  Your task:
+
+  1. Generate a **concise but detailed technical description in Portuguese (pt-BR)** based solely on the given text.
+     - Include all explicit technical attributes such as type, model, function, material, manufacturer, category, capacitance, voltage rating, tolerance, dielectric, package code, mounting style, number of terminals, and operating temperature range.
+     - Must be accurate, professional, and detailed, but avoid unnecessary text.
+     - Include only information explicitly present in the text. Do not infer, guess, or invent anything.
+     - Do not add reasoning, notes, or commentary.
+     - Must describe what the part with no unnecessary information.
+     - Keep the text small and simple.
+
+  2. Extract the **main technical keywords** that characterize the part, optimized for vector search.
+     - Each keyword must be a short, independent token representing a single technical attribute.
+     - Include only explicit and concrete technical terms found in the text.
+     - Each keyword must be **one token only** (no multi-word phrases).
+     - Write all keywords in **lowercase** and use singular form.
+     - Include attributes like: component type, dielectric/material, capacitance, voltage rating, tolerance, package code, mounting style, number of terminals, temperature range, dielectric code, and manufacturer.
+     - Exclude generic or descriptive phrases such as "dielectric material", "temperature coefficient", "fixed capacitance".
+     - Avoid duplicates and stopwords.
+     - Return only **explicit, meaningful technical tokens** optimized for semantic search.
+
+  3. **STRICTLY RETURN ONLY JSON** with this exact structure:
+  {"description": "Breve descrição técnica da peça em português","manufacturer": "Nome do fabricante","key_words": ["palavra1", "palavra2", "palavra3"]}
+
+  **IMPORTANT RULES**:
+  - No text outside the JSON.
+  - No bullet points, tables, or markdown.
+  - Do not add extra commentary or explanations.
+  - Do not invent any information not present in the text.
+  - Return only **ONE** JSON.
+
+  Text:
