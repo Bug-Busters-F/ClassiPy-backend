@@ -10,6 +10,8 @@ instruction: |
      - Must be accurate, professional, and detailed, but avoid unnecessary text.
      - Include only information explicitly present in the text. Do not infer, guess, or invent anything.
      - Do not add reasoning, notes, or commentary.
+     - Must describe what the part with no unnecessary information.
+     - Keep the text small and simple.
 
   2. Extract the **main technical keywords** that characterize the part, optimized for vector search.
      - Each keyword must be a short, independent token representing a single technical attribute.
