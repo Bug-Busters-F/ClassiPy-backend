@@ -22,19 +22,28 @@ def createHistoryEntries(
     
     created_items = []
     for item in items:
-        # Chama a função do CRUD para cada item da lista
-        produto_processado = crud.saveHistorico(
-            db = db,
-            part_number = item.partNumber,
-            file_hash = item.fileHash
-        )
+        try:
+            # Chama a função do CRUD para cada item da lista
+            produto_processado = crud.saveHistorico(
+                db = db,
+                part_number = item.partNumber,
+                file_hash = item.fileHash
+            )
 
-        # Adiciona o resultado à lista de resposta
-        created_items.append({
-            "pro_id": produto_processado.pro_id,
-            "partNumber": produto_processado.pro_part_number,
-            "fileHash": item.fileHash
-        })
+            # Adiciona o resultado à lista de resposta
+            response_item = {
+                "pro_id": produto_processado["pro_id"],
+                "partNumber": produto_processado["partNumber"],
+                "fileHash": item.fileHash,
+                "status": produto_processado["status"]
+            }
+            created_items.append(response_item)
+
+        except Exception as e:
+            raise HTTPException(
+                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                 detail=f"Erro ao processar o Part Number {item.partNumber}: {str(e)}"
+            )
 
     return created_items
 
@@ -198,6 +207,7 @@ def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.
             }
 
         results.append({
+            "pro_id": produto.pro_id,
             "historyId": latest_historico.hist_id,
             "fileHash": latest_historico.hist_hash,
             "processedDate": latest_historico.hist_data_processamento,
@@ -207,3 +217,27 @@ def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.
         })
 
     return results
+
+# NÃO ESTÁ FUNCIONANDO
+@router.get("/{pro_id}/classification", response_model=schemes.ProductClassificationData, status_code=status.HTTP_200_OK)
+def getProductClassificationData(
+    pro_id: int,
+    db: Session = Depends(database.get_db)
+):
+    # Buscar os dados de classificação de um produto já existente.
+    try:
+        classification = crud.getProdutoClassification(db=db, pro_id=pro_id)
+
+        if classification is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Dados de classificação não encontrados para o produto com ID {pro_id}."
+            )
+        
+        return classification
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao buscar dados de classificação: {str(e)}"
+        )

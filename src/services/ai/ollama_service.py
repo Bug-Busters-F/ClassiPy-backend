@@ -20,6 +20,18 @@ def load_prompt(prompt_name: str) -> str:
         data = yaml.safe_load(f)
     return data["instruction"]
 
+def sanitize_json_string(json_str: str) -> str:
+    """
+    Corrige problemas comuns em JSON gerado por LLMs.
+    """
+    
+    json_str = re.sub(r'(?<=\d)"(?=\s*[A-Za-z])', r'\\"', json_str)
+    json_str = re.sub(r'(?<=\d)"(?=[A-Za-z])', r'\\"', json_str)
+    json_str = re.sub(r'(?<=\w)"(?=\s*\w)', r'\\"', json_str)
+
+    json_str = re.sub(r'\s+', ' ', json_str).strip()
+
+    return json_str
 
 
 def run_ollama(prompt_name: str, text: str) -> dict:
@@ -44,6 +56,7 @@ def run_ollama(prompt_name: str, text: str) -> dict:
     json_str = match.group()
 
     # Tenta converter a string em objeto Python
+    json_str = sanitize_json_string(json_str)
     try:
         parsed_json = json.loads(json_str)
         return parsed_json

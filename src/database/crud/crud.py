@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from .. import models
 from . import schemes
 
@@ -64,36 +64,51 @@ def deleteProduto(db: Session, produto_id: int):
     return db_produto
 
 def updateProduto(db: Session, produto_id: int, produto_data: schemes.ProductUpdate):
-    # Encontra o produto pelo ID e verifica se existe
-    db_produto = db.query(models.Produto).filter(models.Produto.pro_id == produto_id).first()
+    db_produto = db.query(models.Produto).options(
+        joinedload(models.Produto.tipi), 
+        joinedload(models.Produto.fabricante)
+    ).filter(models.Produto.pro_id == produto_id).first()
 
     if not db_produto:
         return None
     
-    # Acessa as tabelas relacionadas
-    db_fabricante = db_produto.fabricante
-    db_tipi = db_produto.tipi
+    db_tipi = db.query(models.Tipi).filter(models.Tipi.tipi_ncm == produto_data.classification.ncm_code).first()
+    
+    if not db_tipi:
+        db_tipi = models.Tipi(
+            tipi_ncm = produto_data.classification.ncm_code,
+            tipi_descricao = produto_data.classification.description,
+            tipi_aliquota = produto_data.classification.tax_rate
+        )
+        db.add(db_tipi)
+        db.flush()
+    else:
+        db_tipi.tipi_descricao = produto_data.classification.description
+        db_tipi.tipi_aliquota = produto_data.classification.tax_rate
 
-    # Atualiza os campos do Produto
-    db_produto.pro_part_number = produto_data.partNumber
-    db_produto.pro_descricao = produto_data.description
-    db_produto.pro_status = produto_data.status
+    db_fabricante = db.query(models.Fabricante).filter(models.Fabricante.fab_nome == produto_data.manufacturer.name).first()
 
-    # Atualiza os campos do Fabricante
-    if db_fabricante:
-        db_fabricante.fab_nome = produto_data.manufacturer.name
+    if not db_fabricante:
+        db_fabricante = models.Fabricante(
+            fab_nome = produto_data.manufacturer.name,
+            fab_pais = produto_data.manufacturer.country,
+            fab_endereco = produto_data.manufacturer.address
+        )
+        db.add(db_fabricante)
+        db.flush() 
+    else:
         db_fabricante.fab_pais = produto_data.manufacturer.country
         db_fabricante.fab_endereco = produto_data.manufacturer.address
 
-    # Atualiza os campos da TIPI
-    if db_tipi:
-        db_tipi.tipi_descricao = produto_data.classification.description
-        db_tipi.tipi_ncm = (produto_data.classification.ncm_code)
-        db_tipi.tipi_aliquota = produto_data.classification.tax_rate
-
-    # Confirma as alterações e atualiza a tabela Produto
+    db_produto.pro_part_number = produto_data.partNumber
+    db_produto.pro_descricao = produto_data.description
+    db_produto.pro_status = produto_data.status
+    
+    db_produto.tipi = db_tipi             
+    db_produto.fabricante = db_fabricante 
     db.commit()
-    db.refresh(db_produto)
+    
+    db.refresh(db_produto) 
 
     return db_produto
 
@@ -115,6 +130,8 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
         # Verifica se o produto já existe
         db_produto = db.query(models.Produto).filter(models.Produto.pro_part_number == part_number).first()
 
+        product_status = "revisao"
+
         # Se não existir, cria um novo
         if not db_produto:
             db_produto = models.Produto(
@@ -125,6 +142,8 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
             )
             db.add(db_produto)
             db.flush()
+        else:
+            product_status = db_produto.pro_status
 
         # Cria o novo registro de histórico, ligando ao produto
         db_historico = db.query(models.Historico).filter(
@@ -141,9 +160,47 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
             db.refresh(db_produto)
             db.refresh(db_historico)
 
-        return db_produto
+        return {
+            "pro_id": db_produto.pro_id,
+            "partNumber": db_produto.pro_part_number,
+            "status": product_status
+        }
     
     # Caso dê errado, desfaz as mudanças e propaga o erro
     except Exception as e:
         db.rollback()
+        raise e
+    
+def getProdutoClassification(db: Session, pro_id: int):
+    # Busca os dados de classificação de um produto pelo seu ID.
+    try:
+        db_produto = db.query(models.Produto).filter(models.Produto.pro_id == pro_id).first()
+        if not db_produto:
+            return None
+
+        # Se o produto não tiver ID de fabricante ou tipi, significa que não foi classificado
+        if not db_produto.fabricante_fab_id or not db_produto.tipi_tipi_id:
+             return None
+
+        db_fabricante = db.query(models.Fabricante).filter(
+            models.Fabricante.fab_id == db_produto.fabricante_fab_id).first()
+
+        db_tipi = db.query(models.Tipi).filter(
+            models.Tipi.tipi_id == db_produto.tipi_tipi_id).first()
+
+        if not db_fabricante or not db_tipi:
+             return None
+
+        classification_data = {
+            "ncmCode": db_tipi.tipi_ncm,
+            "description": db_tipi.tipi_descricao,
+            "taxRate": db_tipi.tipi_aliquota,
+            "manufacturerName": db_fabricante.fab_nome,
+            "countryOfOrigin": db_fabricante.fab_pais,
+            "fullAddress": db_fabricante.fab_endereco
+        }
+        return classification_data
+
+    except Exception as e:
+        print(f"❌ Erro em get_produto_classification para pro_id {pro_id}: {e}")
         raise e

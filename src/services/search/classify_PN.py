@@ -48,5 +48,4 @@ if __name__ == "__main__":
     result_json = classify_PN(pn_code)
     print(result_json)
 
-
-#Execute "python -m src.services.search.classify_PN" para testar
+#Para testar execute "python -m src.services.search.classify_PN"

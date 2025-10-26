@@ -46,6 +46,7 @@ class ResponseClassification(BaseModel):
         }
 
 class HistoryResponse(BaseModel):
+    pro_id: Optional[int] = None
     historyId: int
     fileHash: str
     processedDate: datetime
@@ -66,6 +67,7 @@ class HistoryCreateResponse(BaseModel):
     pro_id: int
     partNumber: str
     fileHash: str
+    status: str
 
     model_config = {
         "from_attributes": True,
@@ -79,3 +81,27 @@ class ProductUpdate(BaseModel):
     status: str
     classification: ClassificationBase
     manufacturer: ManufacturerBase
+
+class ClassificationResponse(BaseModel):
+    ncm: str
+    descricao: str
+    fabricante: str
+    aliquota: float
+    descricao_ncm: str
+    
+    model_config = {
+        "from_attributes": True
+    }
+
+class ProductClassificationData(BaseModel):
+    ncmCode: str
+    description: str
+    taxRate: float
+    manufacturerName: str
+    countryOfOrigin: str
+    fullAddress: str
+
+    model_config = {
+        "from_attributes": True,
+         "populate_by_name": True
+    }

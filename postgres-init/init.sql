@@ -2,7 +2,7 @@ create table tipi (
     tipi_id serial primary key not null,
     tipi_descricao text,
     tipi_aliquota numeric(5,2),
-    tipi_ncm int
+    tipi_ncm varchar(50)
 );
 
 create table fabricante (
