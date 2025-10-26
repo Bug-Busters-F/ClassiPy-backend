@@ -130,6 +130,8 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
         # Verifica se o produto já existe
         db_produto = db.query(models.Produto).filter(models.Produto.pro_part_number == part_number).first()
 
+        product_status = "revisao"
+
         # Se não existir, cria um novo
         if not db_produto:
             db_produto = models.Produto(
@@ -140,6 +142,8 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
             )
             db.add(db_produto)
             db.flush()
+        else:
+            product_status = db_produto.pro_status
 
         # Cria o novo registro de histórico, ligando ao produto
         db_historico = db.query(models.Historico).filter(
@@ -156,9 +160,47 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
             db.refresh(db_produto)
             db.refresh(db_historico)
 
-        return db_produto
+        return {
+            "pro_id": db_produto.pro_id,
+            "partNumber": db_produto.pro_part_number,
+            "status": product_status
+        }
     
     # Caso dê errado, desfaz as mudanças e propaga o erro
     except Exception as e:
         db.rollback()
+        raise e
+    
+def getProdutoClassification(db: Session, pro_id: int):
+    # Busca os dados de classificação de um produto pelo seu ID.
+    try:
+        db_produto = db.query(models.Produto).filter(models.Produto.pro_id == pro_id).first()
+        if not db_produto:
+            return None
+
+        # Se o produto não tiver ID de fabricante ou tipi, significa que não foi classificado
+        if not db_produto.fabricante_fab_id or not db_produto.tipi_tipi_id:
+             return None
+
+        db_fabricante = db.query(models.Fabricante).filter(
+            models.Fabricante.fab_id == db_produto.fabricante_fab_id).first()
+
+        db_tipi = db.query(models.Tipi).filter(
+            models.Tipi.tipi_id == db_produto.tipi_tipi_id).first()
+
+        if not db_fabricante or not db_tipi:
+             return None
+
+        classification_data = {
+            "ncmCode": db_tipi.tipi_ncm,
+            "description": db_tipi.tipi_descricao,
+            "taxRate": db_tipi.tipi_aliquota,
+            "manufacturerName": db_fabricante.fab_nome,
+            "countryOfOrigin": db_fabricante.fab_pais,
+            "fullAddress": db_fabricante.fab_endereco
+        }
+        return classification_data
+
+    except Exception as e:
+        print(f"❌ Erro em get_produto_classification para pro_id {pro_id}: {e}")
         raise e

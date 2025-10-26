@@ -67,6 +67,7 @@ class HistoryCreateResponse(BaseModel):
     pro_id: int
     partNumber: str
     fileHash: str
+    status: str
 
     model_config = {
         "from_attributes": True,
@@ -90,4 +91,17 @@ class ClassificationResponse(BaseModel):
     
     model_config = {
         "from_attributes": True
+    }
+
+class ProductClassificationData(BaseModel):
+    ncmCode: str
+    description: str
+    taxRate: float
+    manufacturerName: str
+    countryOfOrigin: str
+    fullAddress: str
+
+    model_config = {
+        "from_attributes": True,
+         "populate_by_name": True
     }
