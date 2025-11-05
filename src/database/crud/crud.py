@@ -171,6 +171,17 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
         db.rollback()
         raise e
     
+def deleteHistorico(db: Session, history_id: int):
+    db_historico  = db.query(models.Historico).filter(models.Historico.hist_id == history_id).first()
+
+    if not db_historico:
+        return None
+    
+    db.delete(db_historico)
+    db.commit()
+
+    return db_historico
+    
 def getProdutoClassification(db: Session, pro_id: int):
     # Busca os dados de classificação de um produto pelo seu ID.
     try:
