@@ -218,15 +218,7 @@ def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.
 
     return results
 
-@router_historico.delete("/{history_id}", status_code = status.HTTP_200_OK)
-def deleteHistory(history_id: int, db: Session = Depends(database.get_db)):
-    deleted_item = crud.deleteHistorico(db=db, history_id=history_id)
-
-    if deleted_item is None:
-        raise HTTPException(status_code=404, detail = "Entrada de histórico não encontrada.")
-    
-    return {"detail": f"Entrada do histórico {history_id} excluída com sucesso."}
-
+# NÃO ESTÁ FUNCIONANDO
 @router.get("/{pro_id}/classification", response_model=schemes.ProductClassificationData, status_code=status.HTTP_200_OK)
 def getProductClassificationData(
     pro_id: int,
