@@ -221,4 +221,4 @@ __marimo__/
 uploads/
 
 #Chromadb
-#src/database/chroma_db
+src/database/chroma_db
