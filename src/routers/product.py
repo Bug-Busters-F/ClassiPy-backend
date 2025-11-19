@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..database import database, models
 from ..database.crud import schemes, crud
+from ..database.crud.crud import fetch_recent_products
 from typing import List
+from src.database.database import get_db
 
 router = APIRouter(
     prefix="/produto",
@@ -13,6 +15,14 @@ router_historico = APIRouter(
     prefix="/historico",
     tags=["Histórico"]
 )
+
+@router.get("/recent", response_model=List[dict])
+def get_recent_products(db: Session = Depends(get_db)):
+    try:
+        return fetch_recent_products(db, limit=5)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar produtos recentes: {str(e)}")
+
 
 @router.post("/", response_model = List[schemes.HistoryCreateResponse], status_code = status.HTTP_201_CREATED)
 def createHistoryEntries(
