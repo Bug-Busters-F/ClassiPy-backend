@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_
 from .. import models
 from . import schemes
+from datetime import datetime
 
 def createProduto(db: Session, produto_data: schemes.ProductCreate):
     # Cria o Fabricante
@@ -120,9 +122,37 @@ def listProdutos(db: Session, skip: int = 0, limit: int = 100):
     # Busca todos os registros da tabela produto
     return db.query(models.Produto).order_by(models.Produto.pro_id.desc()).offset(skip).limit(limit).all()
 
-def listHistorico(db: Session, skip: int = 0, limit: int = 100):
-    # Busca todos os registros do histórico, com um limite pra evitar sobrecarga
-    return db.query(models.Historico).order_by(models.Historico.hist_id.desc()).offset(skip).limit(limit).all()
+def listHistorico(
+        db: Session, 
+        skip: int = 0, 
+        limit: int = 100,
+        search: str = None,
+        start_date: datetime = None,
+        end_date: datetime = None
+    ):
+    query = db.query(models.Historico)
+    query = query.join(models.Produto)
+    query = query.outerjoin(models.Tipi, models.Produto.tipi_tipi_id == models.Tipi.tipi_id)
+
+    # Filtro de busca
+    if search:
+        term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Produto.pro_part_number.ilike(term),
+                models.Produto.pro_descricao.ilike(term),
+                models.Tipi.tipi_ncm.ilike(term)
+            )
+        )
+
+    # Filtro de data
+    if start_date and end_date:
+        query = query.filter(
+            models.Historico.hist_data_processamento >= start_date,
+            models.Historico.hist_data_processamento <= end_date
+        )  
+
+    return query.order_by(models.Historico.hist_data_processamento.desc()).offset(skip).limit(limit).all()
 
 # Nova versão da lógica do savePN.py
 def saveHistorico(db: Session, part_number: str, file_hash: str):
