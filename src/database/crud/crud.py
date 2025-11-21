@@ -3,6 +3,9 @@ from sqlalchemy import or_
 from .. import models
 from . import schemes
 from datetime import datetime
+from src.database.models import Produto, Historico
+from typing import List
+
 
 def createProduto(db: Session, produto_data: schemes.ProductCreate):
     # Cria o Fabricante
@@ -245,3 +248,51 @@ def getProdutoClassification(db: Session, pro_id: int):
     except Exception as e:
         print(f"❌ Erro em get_produto_classification para pro_id {pro_id}: {e}")
         raise e
+
+def fetch_recent_products(db: Session, limit: int = 5) -> List[dict]:
+    # Subquery para pegar o histórico mais recente de cada produto
+    subquery = (
+        db.query(
+            Historico.produto_pro_id,
+            Historico.hist_id,
+            Historico.hist_data_processamento,
+            Historico.hist_hash
+        )
+        .order_by(Historico.produto_pro_id, Historico.hist_data_processamento.desc())
+        .distinct(Historico.produto_pro_id)
+        .subquery()
+    )
+
+    # Query principal, trazendo Produto + Histórico + Tipi + Fabricante
+    results = (
+        db.query(Produto, subquery.c.hist_id, subquery.c.hist_data_processamento, subquery.c.hist_hash)
+        .join(subquery, Produto.pro_id == subquery.c.produto_pro_id)
+        .outerjoin(Produto.tipi)
+        .outerjoin(Produto.fabricante)
+        .order_by(subquery.c.hist_data_processamento.desc())
+        .limit(limit)
+        .all()
+    )
+
+    # Monta a resposta
+    response = []
+    for produto, hist_id, processed_date, file_hash in results:
+        response.append({
+            "pro_id": produto.pro_id,
+            "historyId": hist_id,
+            "fileHash": file_hash,
+            "processedDate": processed_date.isoformat() if processed_date else None,
+            "partNumber": produto.pro_part_number,
+            "status": produto.pro_status,
+            "classification": {
+                "description": produto.tipi.tipi_descricao if produto.tipi else None,
+                "ncmCode": produto.tipi.tipi_ncm if produto.tipi else None,
+                "taxRate": float(produto.tipi.tipi_aliquota) if produto.tipi else None,
+                "manufacturer": {
+                    "name": produto.fabricante.fab_nome if produto.fabricante else None,
+                    "country": produto.fabricante.fab_pais if produto.fabricante else None,
+                    "address": produto.fabricante.fab_endereco if produto.fabricante else None
+                } if produto.fabricante else None
+            }
+        })
+    return response
