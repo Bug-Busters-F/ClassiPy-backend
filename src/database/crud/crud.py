@@ -5,6 +5,7 @@ from . import schemes
 from datetime import datetime
 from src.database.models import Produto, Historico
 from typing import List
+import math
 
 
 def createProduto(db: Session, produto_data: schemes.ProductCreate):
@@ -127,17 +128,20 @@ def listProdutos(db: Session, skip: int = 0, limit: int = 100):
 
 def listHistorico(
         db: Session, 
-        skip: int = 0, 
-        limit: int = 100,
+        page: int = 1,
+        limit: int = 10,
         search: str = None,
         start_date: datetime = None,
         end_date: datetime = None
     ):
+    
+    skip = (page - 1) * limit
+
     query = db.query(models.Historico)
     query = query.join(models.Produto)
     query = query.outerjoin(models.Tipi, models.Produto.tipi_tipi_id == models.Tipi.tipi_id)
 
-    # Filtro de busca
+
     if search:
         term = f"%{search}%"
         query = query.filter(
@@ -148,14 +152,32 @@ def listHistorico(
             )
         )
 
-    # Filtro de data
+
     if start_date and end_date:
         query = query.filter(
             models.Historico.hist_data_processamento >= start_date,
             models.Historico.hist_data_processamento <= end_date
-        )  
+        )
 
-    return query.order_by(models.Historico.hist_data_processamento.desc()).offset(skip).limit(limit).all()
+
+    total = query.count()
+
+
+    pns = (
+        query.order_by(models.Historico.hist_data_processamento.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    pages = math.ceil(total / limit) if limit > 0 else 1
+
+    return {
+        "pns": pns,
+        "page": page,
+        "limit": limit,
+        "pages": pages
+    }
 
 # Nova versão da lógica do savePN.py
 def saveHistorico(db: Session, part_number: str, file_hash: str):

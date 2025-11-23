@@ -155,16 +155,16 @@ def readProduto(id: int, db: Session = Depends(database.get_db)):
 
     return response
 
-@router_historico.get("/", response_model = list[schemes.HistoryResponse])
+@router_historico.get("/", response_model=schemes.HistoryPaginatedResponse)
 def readHistorico(
-    skip: int = 0, 
-    limit: int = 100, 
+    page: int = 1,
+    limit: int = 10,
     search: Optional[str] = None,
     filter_date: Optional[str] = None,
     db: Session = Depends(database.get_db)
 ):
-    print(f"DEBUG: Recebido search='{search}' e filter_date='{filter_date}'")
-    # Tratamento das datas
+    print(f"DEBUG: search='{search}', filter_date='{filter_date}', page={page}, limit={limit}")
+
     dt_start = None
     dt_end = None
 
@@ -176,21 +176,20 @@ def readHistorico(
         except ValueError:
             pass
 
-    historico_list = crud.listHistorico(
-        db, 
-        skip = skip, 
-        limit = limit,
-        search = search,
-        start_date = dt_start,
-        end_date = dt_end
+    historico_paginated = crud.listHistorico(
+        db,
+        page=page,
+        limit=limit,
+        search=search,
+        start_date=dt_start,
+        end_date=dt_end
     )
 
-    results = []
-    for historico in historico_list:
+    pns_response = []
+    for historico in historico_paginated["pns"]:
         db_produto = historico.produto
 
         classification_data = None
-        # Monta o objeto de resposta para cada item do histórico
         if db_produto.tipi and db_produto.fabricante:
             classification_data = {
                 "description": db_produto.tipi.tipi_descricao,
@@ -212,9 +211,16 @@ def readHistorico(
             "status": db_produto.pro_status,
             "classification": classification_data
         }
-        results.append(response_item)
 
-    return results
+        pns_response.append(response_item)
+
+    return {
+        "pns": pns_response,
+        "page": historico_paginated["page"],
+        "limit": historico_paginated["limit"],
+        "pages": historico_paginated["pages"]
+    }
+
 
 @router_historico.delete("/{history_id}", status_code = status.HTTP_200_OK)
 def deleteHistory(history_id: int, db: Session = Depends(database.get_db)):
