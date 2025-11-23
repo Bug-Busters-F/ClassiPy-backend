@@ -204,6 +204,7 @@ def readHistorico(
             }
 
         response_item = {
+            "pro_id": db_produto.pro_id,
             "historyId": historico.hist_id,
             "fileHash": historico.hist_hash,
             "processedDate": historico.hist_data_processamento,
