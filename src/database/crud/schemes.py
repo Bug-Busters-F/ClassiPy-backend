@@ -105,3 +105,9 @@ class ProductClassificationData(BaseModel):
         "from_attributes": True,
          "populate_by_name": True
     }
+
+class HistoryPaginatedResponse(BaseModel):
+    pns: list[HistoryResponse]
+    page: int
+    limit: int
+    pages: int

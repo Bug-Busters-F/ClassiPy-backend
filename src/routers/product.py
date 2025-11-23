@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..database import database, models
 from ..database.crud import schemes, crud
-from typing import List
+from typing import List, Optional
+from ..database.crud.crud import fetch_recent_products
+from datetime import datetime
+from src.database.database import get_db
 
 router = APIRouter(
     prefix="/produto",
@@ -13,6 +16,14 @@ router_historico = APIRouter(
     prefix="/historico",
     tags=["Histórico"]
 )
+
+@router.get("/recent", response_model=List[dict])
+def get_recent_products(db: Session = Depends(get_db)):
+    try:
+        return fetch_recent_products(db, limit=5)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar produtos recentes: {str(e)}")
+
 
 @router.post("/", response_model = List[schemes.HistoryCreateResponse], status_code = status.HTTP_201_CREATED)
 def createHistoryEntries(
@@ -144,16 +155,41 @@ def readProduto(id: int, db: Session = Depends(database.get_db)):
 
     return response
 
-@router.get("/", response_model = list[schemes.HistoryResponse])
-def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    historico_list = crud.listHistorico(db, skip = skip, limit = limit)
+@router_historico.get("/", response_model=schemes.HistoryPaginatedResponse)
+def readHistorico(
+    page: int = 1,
+    limit: int = 10,
+    search: Optional[str] = None,
+    filter_date: Optional[str] = None,
+    db: Session = Depends(database.get_db)
+):
+    print(f"DEBUG: search='{search}', filter_date='{filter_date}', page={page}, limit={limit}")
 
-    results = []
-    for historico in historico_list:
+    dt_start = None
+    dt_end = None
+
+    if filter_date:
+        try:
+            date_obj = datetime.strptime(filter_date, "%Y-%m-%d")
+            dt_start = date_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+            dt_end = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+        except ValueError:
+            pass
+
+    historico_paginated = crud.listHistorico(
+        db,
+        page=page,
+        limit=limit,
+        search=search,
+        start_date=dt_start,
+        end_date=dt_end
+    )
+
+    pns_response = []
+    for historico in historico_paginated["pns"]:
         db_produto = historico.produto
 
         classification_data = None
-        # Monta o objeto de resposta para cada item do histórico
         if db_produto.tipi and db_produto.fabricante:
             classification_data = {
                 "description": db_produto.tipi.tipi_descricao,
@@ -167,6 +203,7 @@ def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(databas
             }
 
         response_item = {
+            "pro_id": db_produto.pro_id,
             "historyId": historico.hist_id,
             "fileHash": historico.hist_hash,
             "processedDate": historico.hist_data_processamento,
@@ -174,51 +211,26 @@ def readHistorico(skip: int = 0, limit: int = 100, db: Session = Depends(databas
             "status": db_produto.pro_status,
             "classification": classification_data
         }
-        results.append(response_item)
 
-    return results
+        pns_response.append(response_item)
 
-@router_historico.get("/", response_model = List[schemes.HistoryResponse])
-def allProdutos(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    produtos = crud.listProdutos(db, skip = skip, limit = limit)
+    return {
+        "pns": pns_response,
+        "page": historico_paginated["page"],
+        "limit": historico_paginated["limit"],
+        "pages": historico_paginated["pages"]
+    }
 
-    results = []
-    for produto in produtos:
-        # Para cada produto, pega o histórico mais recente
-        latest_historico = db.query(models.Historico)\
-        .filter(models.Historico.produto_pro_id == produto.pro_id)\
-        .order_by(models.Historico.hist_data_processamento.desc())\
-        .first()
 
-        if not latest_historico:
-            continue
+@router_historico.delete("/{history_id}", status_code = status.HTTP_200_OK)
+def deleteHistory(history_id: int, db: Session = Depends(database.get_db)):
+    deleted_item = crud.deleteHistorico(db=db, history_id=history_id)
 
-        classification_data = None
-        if produto.tipi and produto.fabricante:
-            classification_data = {
-                "description": produto.tipi.tipi_descricao,
-                "ncmCode": str(produto.tipi.tipi_ncm),
-                "taxRate": produto.tipi.tipi_aliquota,
-                "manufacturer": {
-                    "name": produto.fabricante.fab_nome,
-                    "country": produto.fabricante.fab_pais,
-                    "address": produto.fabricante.fab_endereco
-                }
-            }
+    if deleted_item is None:
+        raise HTTPException(status_code=404, detail = "Entrada de histórico não encontrada.")
+    
+    return {"detail": f"Entrada do histórico {history_id} excluída com sucesso."}
 
-        results.append({
-            "pro_id": produto.pro_id,
-            "historyId": latest_historico.hist_id,
-            "fileHash": latest_historico.hist_hash,
-            "processedDate": latest_historico.hist_data_processamento,
-            "partNumber": produto.pro_part_number,
-            "status": produto.pro_status,
-            "classification": classification_data
-        })
-
-    return results
-
-# NÃO ESTÁ FUNCIONANDO
 @router.get("/{pro_id}/classification", response_model=schemes.ProductClassificationData, status_code=status.HTTP_200_OK)
 def getProductClassificationData(
     pro_id: int,

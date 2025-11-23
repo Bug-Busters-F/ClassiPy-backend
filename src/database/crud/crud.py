@@ -1,6 +1,12 @@
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_
 from .. import models
 from . import schemes
+from datetime import datetime
+from src.database.models import Produto, Historico
+from typing import List
+import math
+
 
 def createProduto(db: Session, produto_data: schemes.ProductCreate):
     # Cria o Fabricante
@@ -120,9 +126,58 @@ def listProdutos(db: Session, skip: int = 0, limit: int = 100):
     # Busca todos os registros da tabela produto
     return db.query(models.Produto).order_by(models.Produto.pro_id.desc()).offset(skip).limit(limit).all()
 
-def listHistorico(db: Session, skip: int = 0, limit: int = 100):
-    # Busca todos os registros do histórico, com um limite pra evitar sobrecarga
-    return db.query(models.Historico).order_by(models.Historico.hist_id.desc()).offset(skip).limit(limit).all()
+def listHistorico(
+        db: Session, 
+        page: int = 1,
+        limit: int = 10,
+        search: str = None,
+        start_date: datetime = None,
+        end_date: datetime = None
+    ):
+    
+    skip = (page - 1) * limit
+
+    query = db.query(models.Historico)
+    query = query.join(models.Produto)
+    query = query.outerjoin(models.Tipi, models.Produto.tipi_tipi_id == models.Tipi.tipi_id)
+
+
+    if search:
+        term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Produto.pro_part_number.ilike(term),
+                models.Produto.pro_descricao.ilike(term),
+                models.Tipi.tipi_ncm.ilike(term)
+            )
+        )
+
+
+    if start_date and end_date:
+        query = query.filter(
+            models.Historico.hist_data_processamento >= start_date,
+            models.Historico.hist_data_processamento <= end_date
+        )
+
+
+    total = query.count()
+
+
+    pns = (
+        query.order_by(models.Historico.hist_data_processamento.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    pages = math.ceil(total / limit) if limit > 0 else 1
+
+    return {
+        "pns": pns,
+        "page": page,
+        "limit": limit,
+        "pages": pages
+    }
 
 # Nova versão da lógica do savePN.py
 def saveHistorico(db: Session, part_number: str, file_hash: str):
@@ -171,6 +226,17 @@ def saveHistorico(db: Session, part_number: str, file_hash: str):
         db.rollback()
         raise e
     
+def deleteHistorico(db: Session, history_id: int):
+    db_historico  = db.query(models.Historico).filter(models.Historico.hist_id == history_id).first()
+
+    if not db_historico:
+        return None
+    
+    db.delete(db_historico)
+    db.commit()
+
+    return db_historico
+    
 def getProdutoClassification(db: Session, pro_id: int):
     # Busca os dados de classificação de um produto pelo seu ID.
     try:
@@ -204,3 +270,51 @@ def getProdutoClassification(db: Session, pro_id: int):
     except Exception as e:
         print(f"❌ Erro em get_produto_classification para pro_id {pro_id}: {e}")
         raise e
+
+def fetch_recent_products(db: Session, limit: int = 5) -> List[dict]:
+    # Subquery para pegar o histórico mais recente de cada produto
+    subquery = (
+        db.query(
+            Historico.produto_pro_id,
+            Historico.hist_id,
+            Historico.hist_data_processamento,
+            Historico.hist_hash
+        )
+        .order_by(Historico.produto_pro_id, Historico.hist_data_processamento.desc())
+        .distinct(Historico.produto_pro_id)
+        .subquery()
+    )
+
+    # Query principal, trazendo Produto + Histórico + Tipi + Fabricante
+    results = (
+        db.query(Produto, subquery.c.hist_id, subquery.c.hist_data_processamento, subquery.c.hist_hash)
+        .join(subquery, Produto.pro_id == subquery.c.produto_pro_id)
+        .outerjoin(Produto.tipi)
+        .outerjoin(Produto.fabricante)
+        .order_by(subquery.c.hist_data_processamento.desc())
+        .limit(limit)
+        .all()
+    )
+
+    # Monta a resposta
+    response = []
+    for produto, hist_id, processed_date, file_hash in results:
+        response.append({
+            "pro_id": produto.pro_id,
+            "historyId": hist_id,
+            "fileHash": file_hash,
+            "processedDate": processed_date.isoformat() if processed_date else None,
+            "partNumber": produto.pro_part_number,
+            "status": produto.pro_status,
+            "classification": {
+                "description": produto.tipi.tipi_descricao if produto.tipi else None,
+                "ncmCode": produto.tipi.tipi_ncm if produto.tipi else None,
+                "taxRate": float(produto.tipi.tipi_aliquota) if produto.tipi else None,
+                "manufacturer": {
+                    "name": produto.fabricante.fab_nome if produto.fabricante else None,
+                    "country": produto.fabricante.fab_pais if produto.fabricante else None,
+                    "address": produto.fabricante.fab_endereco if produto.fabricante else None
+                } if produto.fabricante else None
+            }
+        })
+    return response
